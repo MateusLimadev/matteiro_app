@@ -860,7 +860,7 @@ function renderCatChart(data) {
   if (S.charts.cat) S.charts.cat.destroy();
   S.charts.cat = new Chart(el('chart-categoria'), {
     type: 'doughnut',
-    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#0F1219' }] },
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#060D08' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {

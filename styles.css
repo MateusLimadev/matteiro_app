@@ -1,6 +1,6 @@
 /* ============================================================
-   MATTEIRO — styles.css  v3
-   Design: Professional · Indigo · Modern Finance
+   MATTEIRO — styles.css  v4
+   Design: Professional · Green · Modern Finance
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -11,17 +11,17 @@
 /* ── Design tokens (dark — default) ────────────────────────── */
 :root {
   /* Brand */
-  --primary:       #4F46E5;
-  --primary-lt:    #818CF8;
-  --primary-dk:    #3730A3;
-  --primary-soft:  rgba(79, 70, 229, 0.12);
-  --primary-glow:  rgba(79, 70, 229, 0.30);
+  --primary:       #22C55E;
+  --primary-lt:    #4ADE80;
+  --primary-dk:    #15803D;
+  --primary-soft:  rgba(34, 197, 94, 0.12);
+  --primary-glow:  rgba(34, 197, 94, 0.30);
 
   /* Surfaces */
-  --bg:        #0B0D14;
-  --surface:   #131720;
-  --surface-2: #1A2030;
-  --surface-3: #212840;
+  --bg:        #060D08;
+  --surface:   #0D1A10;
+  --surface-2: #132118;
+  --surface-3: #1A2D20;
 
   /* Strokes */
   --border:    rgba(255,255,255,0.06);
@@ -52,7 +52,7 @@
   /* Shadows */
   --shadow:    0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.45);
-  --shadow-fab:0 4px 20px rgba(79,70,229,0.50);
+  --shadow-fab:0 4px 20px rgba(34,197,94,0.40);
 
   /* Layout */
   --sidebar-w: 248px;
@@ -64,8 +64,8 @@
 [data-theme="light"] {
   --bg:        #F4F6FB;
   --surface:   #FFFFFF;
-  --surface-2: #EEF2FF;
-  --surface-3: #E0E7FF;
+  --surface-2: #E8F5E9;
+  --surface-3: #C8E6C9;
 
   --border:    rgba(0,0,0,0.07);
   --border-2:  rgba(0,0,0,0.12);
@@ -79,7 +79,7 @@
 
   --shadow:    0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
-  --shadow-fab:0 4px 20px rgba(79,70,229,0.30);
+  --shadow-fab:0 4px 20px rgba(34,197,94,0.25);
 }
 
 /* ── Base ───────────────────────────────────────────────────── */
@@ -373,7 +373,7 @@ body {
    ============================================================ */
 
 .hero-card {
-  background: linear-gradient(145deg, #3730A3 0%, #4F46E5 55%, #6D28D9 100%);
+  background: linear-gradient(145deg, #14532D 0%, #166534 40%, #15803D 100%);
   padding: 2.5rem 1.5rem 1.75rem;
   position: relative; overflow: hidden;
 }
