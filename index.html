@@ -355,6 +355,11 @@
             <p id="rel-detail-title" class="chart-title"></p>
             <button class="rel-detail-close" onclick="closeCatDetail()">✕</button>
           </div>
+          <div class="tx-filter-bar" style="margin-top:0">
+            <button id="rel-filter-todos"   class="tx-filter-btn active" onclick="relFilterTx('todos')">Todos</button>
+            <button id="rel-filter-saida"   class="tx-filter-btn"        onclick="relFilterTx('saida')">Saídas</button>
+            <button id="rel-filter-entrada" class="tx-filter-btn"        onclick="relFilterTx('entrada')">Entradas</button>
+          </div>
           <div id="rel-detail-list" class="tx-list"></div>
           <div id="rel-detail-total" class="rel-detail-total"></div>
         </div>

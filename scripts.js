@@ -635,25 +635,64 @@ async function loadRelatorio() {
   renderAnualChart(monthly);
 }
 
-let _relCurrentCat = null;
+let _relCurrentCat    = null;
+let _relDetailFilter  = 'todos'; // 'todos' | 'entrada' | 'saida'
 
 function showCatDetail(catName) {
-  _relCurrentCat = catName;
+  _relCurrentCat   = catName;
+  _relDetailFilter = 'todos';
+  _syncRelFilterBtns();
   _renderCatDetail();
   el('rel-cat-detail').classList.remove('hidden');
   el('rel-cat-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+function relFilterTx(tipo) {
+  _relDetailFilter = tipo;
+  _syncRelFilterBtns();
+  _renderCatDetail();
+}
+
+function _syncRelFilterBtns() {
+  ['todos', 'saida', 'entrada'].forEach(t => {
+    const btn = el('rel-filter-' + t);
+    if (btn) btn.classList.toggle('active', t === _relDetailFilter);
+  });
+}
+
 function _renderCatDetail() {
   const catName = _relCurrentCat;
-  const txs   = _relMonthTxs.filter(t => t.categoria === catName);
-  const total  = txs.reduce((s, t) => s + (parseFloat(t.valor_brl) || 0), 0);
+
+  let txs = _relMonthTxs.filter(t => t.categoria === catName);
+  if (_relDetailFilter !== 'todos') txs = txs.filter(t => t.tipo === _relDetailFilter);
+
+  const totalEntradas = txs.filter(t => t.tipo === 'entrada').reduce((s, t) => s + (parseFloat(t.valor_brl) || 0), 0);
+  const totalSaidas   = txs.filter(t => t.tipo === 'saida'  ).reduce((s, t) => s + (parseFloat(t.valor_brl) || 0), 0);
 
   el('rel-detail-title').textContent = catName;
   el('rel-detail-list').innerHTML = txs.length
     ? txs.map(txRowEditable).join('')
     : '<p class="empty-state">Sem transações.</p>';
-  el('rel-detail-total').textContent = `Total: ${fmt(total)}`;
+
+  // Total dinâmico conforme filtro
+  const totalEl = el('rel-detail-total');
+  if (_relDetailFilter === 'entrada') {
+    totalEl.textContent = `Total entradas: ${fmt(totalEntradas)}`;
+    totalEl.style.color = 'var(--green)';
+  } else if (_relDetailFilter === 'saida') {
+    totalEl.textContent = `Total saídas: ${fmt(totalSaidas)}`;
+    totalEl.style.color = 'var(--red)';
+  } else {
+    const saldo = totalEntradas - totalSaidas;
+    totalEl.innerHTML = `
+      <span style="color:var(--green)">↓ ${fmt(totalEntradas)}</span>
+      &nbsp;·&nbsp;
+      <span style="color:var(--red)">↑ ${fmt(totalSaidas)}</span>
+      &nbsp;·&nbsp;
+      Saldo: <span style="color:${saldo >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(saldo)}</span>
+    `;
+    totalEl.style.color = '';
+  }
 }
 
 function txRowEditable(t) {
