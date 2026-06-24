@@ -36,6 +36,7 @@ const DEFAULT_CATEGORIES = [
   { nome: 'Educação',         tipo: 'saida',   cor: '#9C27B0' },
   { nome: 'Lazer',            tipo: 'saida',   cor: '#3F51B5' },
   { nome: 'Assinaturas',      tipo: 'saida',   cor: '#2196F3' },
+  { nome: 'Cartão de Crédito', tipo: 'saida',  cor: '#0EA5E9' },
   { nome: 'Outros (saída)',   tipo: 'saida',   cor: '#607D8B' },
 ];
 
@@ -558,7 +559,7 @@ async function loadRelatorio() {
   const monthly = {};
   for (let m = 1; m <= 12; m++) monthly[m] = { entradas: 0, saidas: 0 };
   (yearTxs || []).forEach(t => {
-    const m = new Date(t.data).getMonth() + 1;
+    const m = parseInt(t.data.split('-')[1], 10); // evita bug de fuso horário
     const v = parseFloat(t.valor_brl) || 0;
     if (t.tipo === 'entrada') monthly[m].entradas += v;
     else                      monthly[m].saidas   += v;
