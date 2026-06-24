@@ -37,6 +37,8 @@ const DEFAULT_CATEGORIES = [
   { nome: 'Lazer',            tipo: 'saida',   cor: '#3F51B5' },
   { nome: 'Assinaturas',      tipo: 'saida',   cor: '#2196F3' },
   { nome: 'Cartão de Crédito', tipo: 'saida',  cor: '#0EA5E9' },
+  { nome: 'Pets',             tipo: 'saida',   cor: '#F59E0B' },
+  { nome: 'João',             tipo: 'saida',   cor: '#EC4899' },
   { nome: 'Outros (saída)',   tipo: 'saida',   cor: '#607D8B' },
 ];
 
