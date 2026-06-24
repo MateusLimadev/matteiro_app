@@ -608,11 +608,92 @@ function txRowEditable(t) {
         </div>
       </div>
       <div class="tx-right">
-        <span class="tx-valor ${t.tipo}">${t.tipo === 'entrada' ? '+' : '-'} ${fmt(t.valor_brl)}</span>
+        <span id="valor-display-${t.id}" class="tx-valor ${t.tipo} valor-editable"
+          onclick="startEditValor('${t.id}', ${parseFloat(t.valor_brl)})"
+          title="Clique para editar">
+          ${t.tipo === 'entrada' ? '+' : '-'} ${fmt(t.valor_brl)}
+        </span>
         <button class="tx-del" onclick="deleteTx('${t.id}')" title="Excluir">✕</button>
       </div>
     </div>
   `;
+}
+
+function startEditValor(id, currentVal) {
+  const display = el('valor-display-' + id);
+  if (!display) return;
+
+  const tx = _relMonthTxs.find(t => t.id === id);
+  const sinal = tx?.tipo === 'entrada' ? '+' : '-';
+
+  display.outerHTML = `
+    <span class="valor-edit-wrap" id="valor-display-${id}">
+      <input type="number" class="valor-inline-input" id="valor-input-${id}"
+        value="${currentVal}" step="0.01" min="0.01"
+        onkeydown="handleValorKey(event, '${id}')"
+        onblur="cancelEditValor('${id}', ${currentVal}, '${tx?.tipo || 'saida'}')"
+      />
+      <button class="valor-save-btn" onmousedown="event.preventDefault()" onclick="saveValorEdit('${id}', '${tx?.tipo || 'saida'}')">✓</button>
+    </span>
+  `;
+
+  const inp = el('valor-input-' + id);
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function handleValorKey(e, id) {
+  const tx = _relMonthTxs.find(t => t.id === id);
+  if (e.key === 'Enter')  saveValorEdit(id, tx?.tipo || 'saida');
+  if (e.key === 'Escape') cancelEditValor(id, parseFloat(el('valor-input-' + id)?.dataset.orig || 0), tx?.tipo || 'saida');
+}
+
+function cancelEditValor(id, originalVal, tipo) {
+  const wrap = el('valor-display-' + id);
+  if (!wrap || wrap.tagName !== 'SPAN' || !wrap.classList.contains('valor-edit-wrap')) return;
+  const sinal = tipo === 'entrada' ? '+' : '-';
+  wrap.outerHTML = `
+    <span id="valor-display-${id}" class="tx-valor ${tipo} valor-editable"
+      onclick="startEditValor('${id}', ${originalVal})"
+      title="Clique para editar">
+      ${sinal} ${fmt(originalVal)}
+    </span>
+  `;
+}
+
+async function saveValorEdit(id, tipo) {
+  const inp = el('valor-input-' + id);
+  if (!inp) return;
+
+  const newVal = parseFloat(inp.value);
+  if (!newVal || newVal <= 0) { toast('Valor inválido.'); return; }
+
+  inp.disabled = true;
+
+  const { error } = await sb.from('transacoes')
+    .update({ valor: newVal, valor_brl: newVal })
+    .eq('id', id);
+
+  if (error) {
+    toast('Erro ao atualizar valor.');
+    cancelEditValor(id, newVal, tipo);
+    return;
+  }
+
+  // Atualiza caches locais
+  const tx = _relMonthTxs.find(t => t.id === id);
+  if (tx) { tx.valor = newVal; tx.valor_brl = newVal; }
+  const txDash = _allTxs.find(t => t.id === id);
+  if (txDash) { txDash.valor = newVal; txDash.valor_brl = newVal; }
+
+  toast('Valor atualizado. ✓');
+
+  // Atualiza gráfico e painel
+  const byCategory = {};
+  _relMonthTxs.filter(t => t.tipo === 'saida').forEach(t => {
+    byCategory[t.categoria] = (byCategory[t.categoria] || 0) + parseFloat(t.valor_brl);
+  });
+  renderCatChart(byCategory);
+  _renderCatDetail();
 }
 
 async function saveTxCategory(id, newCat, selectEl) {
