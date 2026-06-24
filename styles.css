@@ -520,6 +520,46 @@ body {
   color: #fff;
 }
 
+/* Edit button on tx rows */
+.tx-edit-btn {
+  background: none; border: none; color: var(--dim);
+  font-size: 0.9rem; cursor: pointer; padding: 2px 5px;
+  border-radius: var(--r-xs); transition: color 0.15s;
+  line-height: 1;
+}
+.tx-edit-btn:hover { color: var(--primary-lt); }
+
+/* Inline edit form */
+.tx-item--editing { background: var(--surface-2); }
+
+.tx-edit-form {
+  display: flex; flex-direction: column; gap: 8px;
+  width: 100%; padding: 4px 0;
+}
+.tx-edit-input {
+  background: var(--surface-3);
+  border: 1px solid var(--primary);
+  border-radius: var(--r-xs);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+}
+.tx-edit-cat { width: 100%; max-width: 100%; font-size: 0.82rem; padding: 5px 8px; }
+
+.tx-edit-actions {
+  display: flex; gap: 8px;
+}
+.tx-edit-cancel {
+  background: var(--surface-3); border: 1px solid var(--border-2);
+  border-radius: var(--r-xs); color: var(--muted);
+  font-size: 0.78rem; font-family: inherit;
+  padding: 4px 12px; cursor: pointer; transition: color 0.15s;
+}
+.tx-edit-cancel:hover { color: var(--text); }
+
 /* ── Transaction list ───────────────────────────────────────── */
 .tx-list { display: flex; flex-direction: column; gap: 2px; }
 

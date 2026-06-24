@@ -28,6 +28,7 @@ const DEFAULT_CATEGORIES = [
   { nome: 'Salário',          tipo: 'entrada', cor: '#4CAF50' },
   { nome: 'Freelance',        tipo: 'entrada', cor: '#8BC34A' },
   { nome: 'Investimentos',    tipo: 'entrada', cor: '#009688' },
+  { nome: 'João',             tipo: 'entrada', cor: '#EC4899' },
   { nome: 'Outros (entrada)', tipo: 'entrada', cor: '#00BCD4' },
   { nome: 'Moradia',          tipo: 'saida',   cor: '#EF5350' },
   { nome: 'Alimentação',      tipo: 'saida',   cor: '#FF5722' },
@@ -373,7 +374,7 @@ function _renderTxList() {
 function txRow(t) {
   const initials = (t.descricao || '?').slice(0, 2).toUpperCase();
   return `
-    <div class="tx-item">
+    <div class="tx-item" id="txrow-dash-${t.id}">
       <div class="tx-avatar ${t.tipo}">${initials}</div>
       <div class="tx-info">
         <div class="tx-desc">${esc(t.descricao)}</div>
@@ -381,10 +382,75 @@ function txRow(t) {
       </div>
       <div class="tx-right">
         <span class="tx-valor ${t.tipo}">${t.tipo === 'entrada' ? '+' : '-'} ${fmt(t.valor_brl)}</span>
+        <button class="tx-edit-btn" onclick="startEditTx('${t.id}','${esc(t.descricao)}','${esc(t.categoria)}','${t.tipo}')" title="Editar">✎</button>
         <button class="tx-del" onclick="deleteTx('${t.id}')" title="Excluir">✕</button>
       </div>
     </div>
   `;
+}
+
+function startEditTx(id, descricao, categoria, tipo) {
+  const row = el('txrow-dash-' + id);
+  if (!row) return;
+
+  const catOptions = S.cats
+    .filter(c => c.tipo === tipo)
+    .map(c => `<option value="${esc(c.nome)}" ${c.nome === categoria ? 'selected' : ''}>${esc(c.nome)}</option>`)
+    .join('');
+
+  row.classList.add('tx-item--editing');
+  row.innerHTML = `
+    <div class="tx-edit-form">
+      <input type="text" class="tx-edit-input" id="tx-edit-desc-${id}"
+        value="${esc(descricao)}" placeholder="Descrição"
+        onkeydown="if(event.key==='Enter') saveTxEdit('${id}','${tipo}'); if(event.key==='Escape') cancelTxEdit('${id}')">
+      <select class="cat-inline-select tx-edit-cat" id="tx-edit-cat-${id}">
+        ${catOptions}
+      </select>
+      <div class="tx-edit-actions">
+        <button class="valor-save-btn" onclick="saveTxEdit('${id}','${tipo}')">Salvar</button>
+        <button class="tx-edit-cancel" onclick="cancelTxEdit('${id}')">Cancelar</button>
+      </div>
+    </div>
+  `;
+
+  el('tx-edit-desc-' + id)?.focus();
+}
+
+async function saveTxEdit(id, tipo) {
+  const descEl = el('tx-edit-desc-' + id);
+  const catEl  = el('tx-edit-cat-'  + id);
+  if (!descEl || !catEl) return;
+
+  const newDesc = descEl.value.trim();
+  const newCat  = catEl.value;
+
+  if (!newDesc) { toast('Descrição não pode ser vazia.'); return; }
+
+  descEl.disabled = catEl.disabled = true;
+
+  const { error } = await sb.from('transacoes')
+    .update({ descricao: newDesc, categoria: newCat })
+    .eq('id', id);
+
+  if (error) {
+    toast('Erro ao salvar.');
+    descEl.disabled = catEl.disabled = false;
+    return;
+  }
+
+  // Atualiza caches
+  for (const cache of [_allTxs, _relMonthTxs]) {
+    const tx = cache.find(t => t.id === id);
+    if (tx) { tx.descricao = newDesc; tx.categoria = newCat; }
+  }
+
+  toast('Atualizado. ✓');
+  _renderTxList();
+}
+
+function cancelTxEdit(id) {
+  _renderTxList();
 }
 
 async function deleteTx(id) {
