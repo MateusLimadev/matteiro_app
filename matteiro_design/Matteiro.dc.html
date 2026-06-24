@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  :root{
+    --bg:#060D08; --surface:#0D1A10; --surface-2:#0F2113; --inset:#0A1410;
+    --text:#FFFFFF; --muted:rgba(255,255,255,0.55); --faint:rgba(255,255,255,0.38);
+    --primary:#22C55E; --positive:#4ADE80; --negative:#EF4444;
+    --border:rgba(255,255,255,0.08); --border-strong:rgba(255,255,255,0.14);
+    --chip:rgba(255,255,255,0.06); --chip-2:rgba(255,255,255,0.04);
+  }
+  :root[data-theme="light"]{
+    --bg:#EBF0E9; --surface:#FFFFFF; --surface-2:#F5F8F4; --inset:#EEF2EC;
+    --text:#08130C; --muted:rgba(8,19,12,0.55); --faint:rgba(8,19,12,0.40);
+    --primary:#16A34A; --positive:#15803D; --negative:#DC2626;
+    --border:rgba(8,19,12,0.08); --border-strong:rgba(8,19,12,0.16);
+    --chip:rgba(8,19,12,0.05); --chip-2:rgba(8,19,12,0.03);
+  }
+</style>
+</helmet>
+
+<!-- ============ DESKTOP · DASHBOARD ============ -->
+<div style="position:absolute;left:0px;top:48px;width:1320px">
+  <div data-drags-parent="1" style="font:600 13px Inter;color:#5b6b60;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px">Desktop · Dashboard</div>
+  <div data-screen-label="Desktop Dashboard" style="display:flex;height:856px;background:var(--bg);border-radius:20px;overflow:hidden;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);border:1px solid var(--border)">
+
+    <!-- sidebar -->
+    <div style="width:248px;flex:none;background:#0A140D;display:flex;flex-direction:column;padding:26px 18px;border-right:1px solid rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:center;gap:11px;padding:0 8px 26px">
+        <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#22C55E,#15803D);transform:rotate(45deg);box-shadow:0 6px 18px -6px rgba(34,197,94,.7)"></div>
+        <div style="font:800 19px Inter;color:#fff;letter-spacing:-.02em">Matteiro</div>
+      </div>
+      <div style="font:600 11px Inter;color:rgba(255,255,255,.35);letter-spacing:.12em;padding:8px 11px 10px">PRINCIPAL</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid #22C55E;background:rgba(34,197,94,.10);color:#fff;font:600 14px Inter;border-radius:0 11px 11px 0;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;background:#22C55E"></span>Início</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Transações</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Relatórios</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Contas fixas</div>
+      </div>
+      <div style="font:600 11px Inter;color:rgba(255,255,255,.35);letter-spacing:.12em;padding:22px 11px 10px">CARTEIRA</div>
+      <div style="background:linear-gradient(150deg,#15803D,#0E3D21);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.08)">
+        <div style="font:600 11px Inter;color:rgba(255,255,255,.7);letter-spacing:.06em">SALDO TOTAL</div>
+        <div style="font:800 22px Inter;color:#fff;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums">R$ 24.180,50</div>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+        <div onClick="{{ toggleTheme }}" style="display:flex;background:rgba(255,255,255,.05);border-radius:11px;padding:4px;cursor:pointer;border:1px solid rgba(255,255,255,.07)">
+          <div style="{{ segDark }}">Escuro</div>
+          <div style="{{ segLight }}">Claro</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:6px 4px">
+          <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#4ADE80,#15803D);display:flex;align-items:center;justify-content:center;font:800 15px Inter;color:#04120a">MR</div>
+          <div style="line-height:1.25"><div style="font:700 13px Inter;color:#fff">Matheus R.</div><div style="font:500 11px Inter;color:rgba(255,255,255,.45)">Plano Premium</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- main -->
+    <div style="flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 34px;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font:500 13px Inter;color:var(--muted)">Bem-vindo de volta, Matheus</div>
+          <div style="font:800 23px Inter;color:var(--text);letter-spacing:-.02em;margin-top:2px">Junho 2026</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 15px;color:var(--faint);font:500 13px Inter;width:230px">Buscar transação...</div>
+          <div onClick="{{ goNew }}" style="display:flex;align-items:center;gap:8px;background:var(--primary);color:#04120a;font:700 13px Inter;padding:11px 17px;border-radius:11px;cursor:pointer;box-shadow:0 8px 20px -8px var(--primary)"><span style="font-size:16px;line-height:1">+</span>Nova transação</div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow:auto;padding:28px 34px;display:flex;flex-direction:column;gap:22px">
+        <!-- hero -->
+        <div style="display:grid;grid-template-columns:1.45fr 1fr;gap:18px">
+          <div style="position:relative;background:linear-gradient(135deg,#15803D 0%,#0E3D21 60%,#0A2D18 100%);border-radius:20px;padding:30px 32px;overflow:hidden;border:1px solid rgba(255,255,255,.08)">
+            <div style="position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,.25),transparent 70%)"></div>
+            <div style="position:relative">
+              <div style="display:flex;align-items:center;gap:10px"><span style="font:600 12px Inter;color:rgba(255,255,255,.7);letter-spacing:.08em">SALDO DO MÊS</span><span style="font:700 11px Inter;color:#4ADE80;background:rgba(74,222,128,.16);padding:3px 9px;border-radius:30px">▲ 12,4%</span></div>
+              <div style="font:800 56px Inter;color:#fff;letter-spacing:-.03em;margin:12px 0 6px;font-variant-numeric:tabular-nums">R$ 8.430,50</div>
+              <div style="font:500 13px Inter;color:rgba(255,255,255,.6)">Disponível após despesas previstas</div>
+              <div style="display:flex;gap:26px;margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.12)">
+                <div><div style="display:flex;align-items:center;gap:7px;font:600 12px Inter;color:rgba(255,255,255,.7)"><span style="width:8px;height:8px;border-radius:50%;background:#4ADE80"></span>Receitas</div><div style="font:800 24px Inter;color:#4ADE80;margin-top:6px;font-variant-numeric:tabular-nums">R$ 14.250,00</div></div>
+                <div><div style="display:flex;align-items:center;gap:7px;font:600 12px Inter;color:rgba(255,255,255,.7)"><span style="width:8px;height:8px;border-radius:50%;background:#EF4444"></span>Despesas</div><div style="font:800 24px Inter;color:#FCA5A5;margin-top:6px;font-variant-numeric:tabular-nums">R$ 5.819,50</div></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px">
+              <div style="font:600 12px Inter;color:var(--muted);letter-spacing:.04em">TAXA DE POUPANÇA</div>
+              <div style="display:flex;align-items:flex-end;gap:8px;margin-top:10px"><div style="font:800 38px Inter;color:var(--text);letter-spacing:-.02em">59%</div><div style="font:600 12px Inter;color:var(--positive);margin-bottom:9px">da renda guardada</div></div>
+              <div style="height:8px;border-radius:6px;background:var(--inset);margin-top:14px;overflow:hidden"><div style="width:59%;height:100%;background:linear-gradient(90deg,#22C55E,#4ADE80)"></div></div>
+            </div>
+            <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px">
+              <div style="font:600 12px Inter;color:var(--muted);letter-spacing:.04em">CONTAS FIXAS · JUNHO</div>
+              <div style="display:flex;align-items:flex-end;gap:8px;margin-top:10px"><div style="font:800 26px Inter;color:var(--text);letter-spacing:-.02em;font-variant-numeric:tabular-nums">R$ 3.099,80</div></div>
+              <div style="display:flex;gap:6px;margin-top:14px"><div style="flex:1;height:8px;border-radius:6px;background:#15803D"></div><div style="flex:1;height:8px;border-radius:6px;background:#22C55E"></div><div style="flex:1;height:8px;border-radius:6px;background:var(--inset)"></div></div>
+              <div style="font:500 12px Inter;color:var(--muted);margin-top:10px">3 de 5 pagas este mês</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- transactions -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px 26px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+            <div style="font:800 17px Inter;color:var(--text);letter-spacing:-.01em">Transações recentes</div>
+            <div style="display:flex;gap:7px">
+              <div onClick="{{ filterAll }}" style="{{ tabAll }}">Todas</div>
+              <div onClick="{{ filterInc }}" style="{{ tabInc }}">Receitas</div>
+              <div onClick="{{ filterExp }}" style="{{ tabExp }}">Despesas</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <sc-for list="{{ txns }}" as="t" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:15px;padding:13px 0;border-bottom:1px solid var(--border)">
+                <div style="width:42px;height:42px;border-radius:12px;background:{{ t.initialBg }};color:{{ t.initialColor }};display:flex;align-items:center;justify-content:center;font:800 15px Inter;flex:none">{{ t.initial }}</div>
+                <div style="flex:1;min-width:0"><div style="font:700 14px Inter;color:var(--text)">{{ t.name }}</div><div style="font:500 12px Inter;color:var(--muted);margin-top:2px">{{ t.cat }} · {{ t.when }}</div></div>
+                <div style="font:800 15px Inter;color:{{ t.amountColor }};font-variant-numeric:tabular-nums;letter-spacing:-.01em">{{ t.amountText }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DESKTOP · REPORTS ============ -->
+<div style="position:absolute;left:1400px;top:48px;width:1320px">
+  <div data-drags-parent="1" style="font:600 13px Inter;color:#5b6b60;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px">Desktop · Relatórios</div>
+  <div data-screen-label="Desktop Reports" style="display:flex;height:856px;background:var(--bg);border-radius:20px;overflow:hidden;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);border:1px solid var(--border)">
+    <div style="width:248px;flex:none;background:#0A140D;display:flex;flex-direction:column;padding:26px 18px;border-right:1px solid rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:center;gap:11px;padding:0 8px 26px"><div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#22C55E,#15803D);transform:rotate(45deg);box-shadow:0 6px 18px -6px rgba(34,197,94,.7)"></div><div style="font:800 19px Inter;color:#fff;letter-spacing:-.02em">Matteiro</div></div>
+      <div style="font:600 11px Inter;color:rgba(255,255,255,.35);letter-spacing:.12em;padding:8px 11px 10px">PRINCIPAL</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Início</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Transações</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid #22C55E;background:rgba(34,197,94,.10);color:#fff;font:600 14px Inter;border-radius:0 11px 11px 0;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;background:#22C55E"></span>Relatórios</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Contas fixas</div>
+      </div>
+      <div style="font:600 11px Inter;color:rgba(255,255,255,.35);letter-spacing:.12em;padding:22px 11px 10px">PERÍODO</div>
+      <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.08)"><div style="font:600 11px Inter;color:rgba(255,255,255,.6)">ANO FISCAL</div><div style="font:800 20px Inter;color:#fff;margin-top:5px">2026</div></div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+        <div onClick="{{ toggleTheme }}" style="display:flex;background:rgba(255,255,255,.05);border-radius:11px;padding:4px;cursor:pointer;border:1px solid rgba(255,255,255,.07)"><div style="{{ segDark }}">Escuro</div><div style="{{ segLight }}">Claro</div></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:6px 4px"><div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#4ADE80,#15803D);display:flex;align-items:center;justify-content:center;font:800 15px Inter;color:#04120a">MR</div><div style="line-height:1.25"><div style="font:700 13px Inter;color:#fff">Matheus R.</div><div style="font:500 11px Inter;color:rgba(255,255,255,.45)">Plano Premium</div></div></div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 34px;border-bottom:1px solid var(--border)">
+        <div><div style="font:500 13px Inter;color:var(--muted)">Análise financeira</div><div style="font:800 23px Inter;color:var(--text);letter-spacing:-.02em;margin-top:2px">Relatórios</div></div>
+        <div style="display:flex;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:4px"><div style="padding:8px 15px;border-radius:8px;background:var(--primary);color:#04120a;font:700 12px Inter">Mês</div><div style="padding:8px 15px;border-radius:8px;color:var(--muted);font:600 12px Inter">Trimestre</div><div style="padding:8px 15px;border-radius:8px;color:var(--muted);font:600 12px Inter">Ano</div></div>
+      </div>
+
+      <div style="flex:1;overflow:auto;padding:28px 34px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px"><div style="font:600 12px Inter;color:var(--muted)">Receita total</div><div style="font:800 27px Inter;color:var(--text);margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-.02em">R$ 168,4 mil</div><div style="font:600 12px Inter;color:var(--positive);margin-top:6px">▲ 8,2% vs 2025</div></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px"><div style="font:600 12px Inter;color:var(--muted)">Despesa total</div><div style="font:800 27px Inter;color:var(--text);margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-.02em">R$ 71,9 mil</div><div style="font:600 12px Inter;color:var(--negative);margin-top:6px">▲ 3,1% vs 2025</div></div>
+          <div style="background:linear-gradient(135deg,#15803D,#0E3D21);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px"><div style="font:600 12px Inter;color:rgba(255,255,255,.7)">Economia líquida</div><div style="font:800 27px Inter;color:#fff;margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-.02em">R$ 96,5 mil</div><div style="font:600 12px Inter;color:#4ADE80;margin-top:6px">▲ 14,0% vs 2025</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:16px;flex:1">
+          <!-- donut -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;flex-direction:column">
+            <div style="font:800 16px Inter;color:var(--text);letter-spacing:-.01em">Despesas por categoria</div>
+            <div style="display:flex;justify-content:center;margin:18px 0">
+              <div style="position:relative;width:188px;height:188px;border-radius:50%;background:conic-gradient(#15803D 0 38%,#22C55E 38% 60%,#4ADE80 60% 74%,#16A34A 74% 85%,#86EFAC 85% 93%,#2F9E5A 93% 100%)">
+                <div style="position:absolute;inset:30px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:600 11px Inter;color:var(--muted)">TOTAL</div><div style="font:800 21px Inter;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-.02em">R$ 5.819</div></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:11px;margin-top:4px">
+              <div style="display:flex;align-items:center;gap:10px;font:600 13px Inter;color:var(--text)"><span style="width:10px;height:10px;border-radius:3px;background:#15803D"></span>Moradia<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)">38%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font:600 13px Inter;color:var(--text)"><span style="width:10px;height:10px;border-radius:3px;background:#22C55E"></span>Alimentação<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)">22%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font:600 13px Inter;color:var(--text)"><span style="width:10px;height:10px;border-radius:3px;background:#4ADE80"></span>Transporte<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)">14%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font:600 13px Inter;color:var(--text)"><span style="width:10px;height:10px;border-radius:3px;background:#16A34A"></span>Compras<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)">11%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font:600 13px Inter;color:var(--text)"><span style="width:10px;height:10px;border-radius:3px;background:#86EFAC"></span>Assinaturas<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)">8%</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font:600 13px Inter;color:var(--text)"><span style="width:10px;height:10px;border-radius:3px;background:#2F9E5A"></span>Saúde<span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted)">7%</span></div>
+            </div>
+          </div>
+
+          <!-- annual bars -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font:800 16px Inter;color:var(--text);letter-spacing:-.01em">Receitas vs Despesas · 2026</div><div style="display:flex;gap:16px"><div style="display:flex;align-items:center;gap:7px;font:600 12px Inter;color:var(--muted)"><span style="width:9px;height:9px;border-radius:2px;background:#22C55E"></span>Receita</div><div style="display:flex;align-items:center;gap:7px;font:600 12px Inter;color:var(--muted)"><span style="width:9px;height:9px;border-radius:2px;background:#EF4444"></span>Despesa</div></div></div>
+            <div style="flex:1;display:flex;align-items:flex-end;gap:14px;padding:30px 4px 0">
+              <sc-for list="{{ months }}" as="m" hint-placeholder-count="12">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;height:100%;justify-content:flex-end">
+                  <div style="width:100%;display:flex;gap:4px;align-items:flex-end;height:260px;justify-content:center">
+                    <div style="width:42%;height:{{ m.inc }};background:linear-gradient(180deg,#4ADE80,#22C55E);border-radius:4px 4px 0 0"></div>
+                    <div style="width:42%;height:{{ m.exp }};background:linear-gradient(180deg,#F87171,#EF4444);border-radius:4px 4px 0 0;opacity:.85"></div>
+                  </div>
+                  <div style="font:600 11px Inter;color:var(--faint)">{{ m.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DESKTOP · NEW TRANSACTION ============ -->
+<div style="position:absolute;left:2800px;top:48px;width:1320px">
+  <div data-drags-parent="1" style="font:600 13px Inter;color:#5b6b60;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px">Desktop · Nova transação</div>
+  <div data-screen-label="Desktop New Transaction" style="display:flex;height:856px;background:var(--bg);border-radius:20px;overflow:hidden;box-shadow:0 30px 70px -30px rgba(0,0,0,.5);border:1px solid var(--border)">
+    <div style="width:248px;flex:none;background:#0A140D;display:flex;flex-direction:column;padding:26px 18px;border-right:1px solid rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:center;gap:11px;padding:0 8px 26px"><div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#22C55E,#15803D);transform:rotate(45deg);box-shadow:0 6px 18px -6px rgba(34,197,94,.7)"></div><div style="font:800 19px Inter;color:#fff;letter-spacing:-.02em">Matteiro</div></div>
+      <div style="font:600 11px Inter;color:rgba(255,255,255,.35);letter-spacing:.12em;padding:8px 11px 10px">PRINCIPAL</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Início</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid #22C55E;background:rgba(34,197,94,.10);color:#fff;font:600 14px Inter;border-radius:0 11px 11px 0;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;background:#22C55E"></span>Transações</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Relatórios</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:11px 13px;border-left:3px solid transparent;color:rgba(255,255,255,.55);font:600 14px Inter;cursor:pointer"><span style="width:17px;height:17px;border-radius:6px;border:1.5px solid currentColor"></span>Contas fixas</div>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+        <div onClick="{{ toggleTheme }}" style="display:flex;background:rgba(255,255,255,.05);border-radius:11px;padding:4px;cursor:pointer;border:1px solid rgba(255,255,255,.07)"><div style="{{ segDark }}">Escuro</div><div style="{{ segLight }}">Claro</div></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:6px 4px"><div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#4ADE80,#15803D);display:flex;align-items:center;justify-content:center;font:800 15px Inter;color:#04120a">MR</div><div style="line-height:1.25"><div style="font:700 13px Inter;color:#fff">Matheus R.</div><div style="font:500 11px Inter;color:rgba(255,255,255,.45)">Plano Premium</div></div></div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0;align-items:center;overflow:auto">
+      <div style="width:100%;max-width:640px;padding:40px 28px 48px">
+        <div style="font:500 13px Inter;color:var(--muted)">Transações</div>
+        <div style="font:800 28px Inter;color:var(--text);letter-spacing:-.02em;margin:3px 0 28px">Nova transação</div>
+
+        <!-- type toggle -->
+        <div style="display:flex;gap:10px;margin-bottom:26px">
+          <div onClick="{{ setExpense }}" style="{{ typeExp }}">Despesa</div>
+          <div onClick="{{ setIncome }}" style="{{ typeInc }}">Receita</div>
+        </div>
+
+        <!-- amount -->
+        <div style="background:var(--surface);border:1px solid var(--border-strong);border-radius:20px;padding:30px 28px;text-align:center;margin-bottom:24px">
+          <div style="font:600 12px Inter;color:var(--muted);letter-spacing:.06em">VALOR</div>
+          <div style="display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:10px"><span style="font:700 28px Inter;color:var(--muted)">R$</span><span style="font:900 56px Inter;color:{{ amountColor }};letter-spacing:-.03em;font-variant-numeric:tabular-nums">1.250,00</span></div>
+        </div>
+
+        <!-- fields -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div><div style="font:600 12px Inter;color:var(--muted);margin-bottom:9px">CATEGORIA</div><div style="display:flex;flex-wrap:wrap;gap:9px"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="6"><div onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.name }}</div></sc-for></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div><div style="font:600 12px Inter;color:var(--muted);margin-bottom:9px">DATA</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font:600 14px Inter;color:var(--text)">24 jun 2026</div></div>
+            <div><div style="font:600 12px Inter;color:var(--muted);margin-bottom:9px">CONTA</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font:600 14px Inter;color:var(--text);display:flex;justify-content:space-between">Conta corrente <span style="color:var(--faint)">▾</span></div></div>
+          </div>
+          <div><div style="font:600 12px Inter;color:var(--muted);margin-bottom:9px">DESCRIÇÃO</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font:500 14px Inter;color:var(--faint)">Adicione uma nota...</div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px">
+            <div><div style="font:700 14px Inter;color:var(--text)">Repetir mensalmente</div><div style="font:500 12px Inter;color:var(--muted);margin-top:2px">Criar como conta fixa recorrente</div></div>
+            <div onClick="{{ toggleRecur }}" style="{{ recurTrack }}"><div style="{{ recurKnob }}"></div></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:30px">
+          <div style="flex:none;padding:16px 26px;border-radius:13px;border:1px solid var(--border-strong);font:700 14px Inter;color:var(--text)">Cancelar</div>
+          <div style="flex:1;text-align:center;padding:16px;border-radius:13px;background:var(--primary);color:#04120a;font:800 14px Inter;box-shadow:0 12px 26px -10px var(--primary);cursor:pointer">Salvar transação</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MOBILE · DASHBOARD ============ -->
+<div style="position:absolute;left:0px;top:1040px;width:392px">
+  <div data-drags-parent="1" style="font:600 13px Inter;color:#5b6b60;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px">Mobile · Início</div>
+  <div data-screen-label="Mobile Dashboard" style="position:relative;width:392px;height:830px;background:var(--bg);border-radius:34px;overflow:hidden;border:1px solid var(--border);box-shadow:0 30px 70px -30px rgba(0,0,0,.5)">
+    <div style="height:100%;overflow:auto;padding:54px 18px 96px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#4ADE80,#15803D);display:flex;align-items:center;justify-content:center;font:800 14px Inter;color:#04120a">MR</div><div><div style="font:500 11px Inter;color:var(--muted)">Bem-vindo</div><div style="font:700 14px Inter;color:var(--text)">Matheus R.</div></div></div>
+        <div onClick="{{ toggleTheme }}" style="width:38px;height:38px;border-radius:11px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:700 12px Inter;color:var(--muted)">{{ themeIcon }}</div>
+      </div>
+      <div style="position:relative;background:linear-gradient(140deg,#15803D,#0E3D21 70%);border-radius:22px;padding:24px;overflow:hidden;border:1px solid rgba(255,255,255,.08)">
+        <div style="position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,.28),transparent 70%)"></div>
+        <div style="position:relative"><div style="display:flex;align-items:center;gap:9px"><span style="font:600 11px Inter;color:rgba(255,255,255,.7);letter-spacing:.06em">SALDO DO MÊS</span><span style="font:700 10px Inter;color:#4ADE80;background:rgba(74,222,128,.16);padding:2px 8px;border-radius:20px">▲ 12,4%</span></div>
+        <div style="font:900 42px Inter;color:#fff;letter-spacing:-.03em;margin:10px 0 18px;font-variant-numeric:tabular-nums">R$ 8.430,50</div>
+        <div style="display:flex;gap:14px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12)"><div style="flex:1"><div style="font:600 11px Inter;color:rgba(255,255,255,.65)">↑ Receitas</div><div style="font:800 17px Inter;color:#4ADE80;margin-top:4px;font-variant-numeric:tabular-nums">R$ 14.250</div></div><div style="flex:1"><div style="font:600 11px Inter;color:rgba(255,255,255,.65)">↓ Despesas</div><div style="font:800 17px Inter;color:#FCA5A5;margin-top:4px;font-variant-numeric:tabular-nums">R$ 5.819</div></div></div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 2px 14px"><div style="font:800 16px Inter;color:var(--text)">Transações</div><div style="font:600 12px Inter;color:var(--primary)">Ver tudo</div></div>
+      <div style="display:flex;gap:7px;margin-bottom:6px"><div onClick="{{ filterAll }}" style="{{ tabAll }}">Todas</div><div onClick="{{ filterInc }}" style="{{ tabInc }}">Receitas</div><div onClick="{{ filterExp }}" style="{{ tabExp }}">Despesas</div></div>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ txns }}" as="t" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)">
+            <div style="width:40px;height:40px;border-radius:12px;background:{{ t.initialBg }};color:{{ t.initialColor }};display:flex;align-items:center;justify-content:center;font:800 14px Inter;flex:none">{{ t.initial }}</div>
+            <div style="flex:1;min-width:0"><div style="font:700 14px Inter;color:var(--text)">{{ t.name }}</div><div style="font:500 11px Inter;color:var(--muted);margin-top:1px">{{ t.cat }}</div></div>
+            <div style="font:800 14px Inter;color:{{ t.amountColor }};font-variant-numeric:tabular-nums">{{ t.amountText }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:78px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 14px 10px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--primary)"><span style="width:20px;height:20px;border-radius:7px;background:currentColor"></span><span style="font:700 10px Inter">Início</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint)"><span style="width:20px;height:20px;border-radius:7px;border:1.7px solid currentColor"></span><span style="font:600 10px Inter">Lista</span></div>
+      <div onClick="{{ goNew }}" style="width:54px;height:54px;border-radius:17px;background:var(--primary);display:flex;align-items:center;justify-content:center;font:400 30px Inter;color:#04120a;margin-top:-22px;box-shadow:0 12px 24px -8px var(--primary)">+</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint)"><span style="width:20px;height:20px;border-radius:7px;border:1.7px solid currentColor"></span><span style="font:600 10px Inter">Relatórios</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint)"><span style="width:20px;height:20px;border-radius:50%;border:1.7px solid currentColor"></span><span style="font:600 10px Inter">Perfil</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MOBILE · REPORTS ============ -->
+<div style="position:absolute;left:444px;top:1040px;width:392px">
+  <div data-drags-parent="1" style="font:600 13px Inter;color:#5b6b60;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px">Mobile · Relatórios</div>
+  <div data-screen-label="Mobile Reports" style="position:relative;width:392px;height:830px;background:var(--bg);border-radius:34px;overflow:hidden;border:1px solid var(--border);box-shadow:0 30px 70px -30px rgba(0,0,0,.5)">
+    <div style="height:100%;overflow:auto;padding:54px 18px 96px">
+      <div style="font:500 12px Inter;color:var(--muted)">Análise · 2026</div>
+      <div style="font:800 24px Inter;color:var(--text);letter-spacing:-.02em;margin:2px 0 18px">Relatórios</div>
+      <div style="background:linear-gradient(135deg,#15803D,#0E3D21);border-radius:18px;padding:20px;border:1px solid rgba(255,255,255,.08);margin-bottom:16px"><div style="font:600 11px Inter;color:rgba(255,255,255,.7)">ECONOMIA LÍQUIDA · ANO</div><div style="font:900 34px Inter;color:#fff;margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-.03em">R$ 96.520</div><div style="font:600 12px Inter;color:#4ADE80;margin-top:4px">▲ 14,0% vs 2025</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:16px">
+        <div style="font:800 15px Inter;color:var(--text);margin-bottom:16px">Despesas por categoria</div>
+        <div style="display:flex;justify-content:center"><div style="position:relative;width:158px;height:158px;border-radius:50%;background:conic-gradient(#15803D 0 38%,#22C55E 38% 60%,#4ADE80 60% 74%,#16A34A 74% 85%,#86EFAC 85% 93%,#2F9E5A 93% 100%)"><div style="position:absolute;inset:26px;border-radius:50%;background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font:600 10px Inter;color:var(--muted)">TOTAL</div><div style="font:800 17px Inter;color:var(--text);font-variant-numeric:tabular-nums">R$ 5.819</div></div></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px">
+          <div style="display:flex;align-items:center;gap:8px;font:600 12px Inter;color:var(--text)"><span style="width:9px;height:9px;border-radius:3px;background:#15803D"></span>Moradia<span style="margin-left:auto;color:var(--muted)">38%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font:600 12px Inter;color:var(--text)"><span style="width:9px;height:9px;border-radius:3px;background:#22C55E"></span>Alim.<span style="margin-left:auto;color:var(--muted)">22%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font:600 12px Inter;color:var(--text)"><span style="width:9px;height:9px;border-radius:3px;background:#4ADE80"></span>Transp.<span style="margin-left:auto;color:var(--muted)">14%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font:600 12px Inter;color:var(--text)"><span style="width:9px;height:9px;border-radius:3px;background:#16A34A"></span>Compras<span style="margin-left:auto;color:var(--muted)">11%</span></div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><div style="font:800 15px Inter;color:var(--text)">Receita vs Despesa</div><div style="display:flex;gap:10px"><span style="display:flex;align-items:center;gap:5px;font:600 10px Inter;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#22C55E"></span>Rec.</span><span style="display:flex;align-items:center;gap:5px;font:600 10px Inter;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#EF4444"></span>Desp.</span></div></div>
+        <div style="display:flex;align-items:flex-end;gap:7px;padding-top:16px">
+          <sc-for list="{{ months6 }}" as="m" hint-placeholder-count="6">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px">
+              <div style="width:100%;display:flex;gap:3px;align-items:flex-end;height:140px;justify-content:center">
+                <div style="width:44%;height:{{ m.inc }};background:linear-gradient(180deg,#4ADE80,#22C55E);border-radius:3px 3px 0 0"></div>
+                <div style="width:44%;height:{{ m.exp }};background:linear-gradient(180deg,#F87171,#EF4444);border-radius:3px 3px 0 0;opacity:.85"></div>
+              </div>
+              <div style="font:600 10px Inter;color:var(--faint)">{{ m.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:78px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 14px 10px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint)"><span style="width:20px;height:20px;border-radius:7px;border:1.7px solid currentColor"></span><span style="font:600 10px Inter">Início</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint)"><span style="width:20px;height:20px;border-radius:7px;border:1.7px solid currentColor"></span><span style="font:600 10px Inter">Lista</span></div>
+      <div onClick="{{ goNew }}" style="width:54px;height:54px;border-radius:17px;background:var(--primary);display:flex;align-items:center;justify-content:center;font:400 30px Inter;color:#04120a;margin-top:-22px;box-shadow:0 12px 24px -8px var(--primary)">+</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--primary)"><span style="width:20px;height:20px;border-radius:7px;background:currentColor"></span><span style="font:700 10px Inter">Relatórios</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint)"><span style="width:20px;height:20px;border-radius:50%;border:1.7px solid currentColor"></span><span style="font:600 10px Inter">Perfil</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MOBILE · NEW TRANSACTION ============ -->
+<div style="position:absolute;left:888px;top:1040px;width:392px">
+  <div data-drags-parent="1" style="font:600 13px Inter;color:#5b6b60;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px">Mobile · Nova transação</div>
+  <div data-screen-label="Mobile New Transaction" style="position:relative;width:392px;height:830px;background:var(--bg);border-radius:34px;overflow:hidden;border:1px solid var(--border);box-shadow:0 30px 70px -30px rgba(0,0,0,.5)">
+    <div style="height:100%;overflow:auto;padding:54px 18px 30px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px"><div style="width:38px;height:38px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:700 18px Inter;color:var(--text)">←</div><div style="font:800 16px Inter;color:var(--text)">Nova transação</div><div style="width:38px"></div></div>
+
+      <div style="display:flex;gap:8px;margin-bottom:22px"><div onClick="{{ setExpense }}" style="{{ typeExp }}">Despesa</div><div onClick="{{ setIncome }}" style="{{ typeInc }}">Receita</div></div>
+
+      <div style="background:var(--surface);border:1px solid var(--border-strong);border-radius:20px;padding:26px 20px;text-align:center;margin-bottom:22px"><div style="font:600 11px Inter;color:var(--muted);letter-spacing:.06em">VALOR</div><div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:8px"><span style="font:700 22px Inter;color:var(--muted)">R$</span><span style="font:900 46px Inter;color:{{ amountColor }};letter-spacing:-.03em;font-variant-numeric:tabular-nums">1.250,00</span></div></div>
+
+      <div style="font:600 11px Inter;color:var(--muted);margin-bottom:9px">CATEGORIA</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="6"><div onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.name }}</div></sc-for></div>
+
+      <div style="display:flex;gap:12px;margin-bottom:16px"><div style="flex:1"><div style="font:600 11px Inter;color:var(--muted);margin-bottom:8px">DATA</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;font:600 13px Inter;color:var(--text)">24 jun 2026</div></div><div style="flex:1"><div style="font:600 11px Inter;color:var(--muted);margin-bottom:8px">CONTA</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;font:600 13px Inter;color:var(--text)">Corrente</div></div></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 16px;margin-bottom:24px"><div><div style="font:700 13px Inter;color:var(--text)">Repetir mensalmente</div><div style="font:500 11px Inter;color:var(--muted);margin-top:1px">Conta fixa recorrente</div></div><div onClick="{{ toggleRecur }}" style="{{ recurTrack }}"><div style="{{ recurKnob }}"></div></div></div>
+
+      <div style="text-align:center;padding:16px;border-radius:14px;background:var(--primary);color:#04120a;font:800 14px Inter;box-shadow:0 12px 26px -10px var(--primary)">Salvar transação</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { theme: 'dark', filter: 'All', txType: 'expense', cat: 'Alimentação', recur: false };
+
+  componentDidMount(){ this.applyTheme(); }
+  componentDidUpdate(){ this.applyTheme(); }
+  applyTheme(){ try { document.documentElement.setAttribute('data-theme', this.state.theme); } catch(e){} }
+
+  fmt(n){
+    const v = Math.abs(n).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n < 0 ? '-' : '') + 'R$ ' + v;
+  }
+
+  tabStyle(name){
+    const active = this.state.filter === name;
+    const base = 'padding:8px 15px;border-radius:10px;font:600 12px Inter;cursor:pointer;';
+    return active
+      ? base + 'background:rgba(34,197,94,.14);color:var(--positive);border:1px solid rgba(34,197,94,.30)'
+      : base + 'background:transparent;color:var(--muted);border:1px solid transparent';
+  }
+
+  typeStyle(kind){
+    const active = this.state.txType === kind;
+    const base = 'flex:1;text-align:center;padding:13px;border-radius:13px;font:700 14px Inter;cursor:pointer;';
+    if (active && kind === 'income') return base + 'background:rgba(34,197,94,.14);color:var(--positive);border:1px solid rgba(34,197,94,.35)';
+    if (active && kind === 'expense') return base + 'background:rgba(239,68,68,.13);color:var(--negative);border:1px solid rgba(239,68,68,.32)';
+    return base + 'background:var(--surface);color:var(--muted);border:1px solid var(--border)';
+  }
+
+  segStyle(which){
+    const active = this.state.theme === which;
+    const base = 'flex:1;text-align:center;padding:8px;border-radius:8px;font:600 12px Inter;transition:all .15s;';
+    return active ? base + 'background:#22C55E;color:#04120a' : base + 'color:rgba(255,255,255,.5)';
+  }
+
+  renderVals(){
+    const all = [
+      { name:'Salário', cat:'Salário', initial:'S', amount:12000, type:'income', when:'Hoje · 09:00' },
+      { name:'Projeto freelance', cat:'Renda extra', initial:'F', amount:2250, type:'income', when:'Ontem · 14:20' },
+      { name:'Aluguel', cat:'Moradia', initial:'A', amount:-2800, type:'expense', when:'2 jun · 08:00' },
+      { name:'Supermercado', cat:'Alimentação', initial:'M', amount:-642.30, type:'expense', when:'3 jun · 19:42' },
+      { name:'Uber', cat:'Transporte', initial:'U', amount:-87.50, type:'expense', when:'4 jun · 22:10' },
+      { name:'Netflix', cat:'Assinaturas', initial:'N', amount:-39.90, type:'expense', when:'5 jun · 00:00' },
+      { name:'Academia', cat:'Saúde', initial:'A', amount:-120, type:'expense', when:'5 jun · 07:30' },
+    ];
+    const f = this.state.filter;
+    const filtered = all.filter(t => f === 'All' ? true : f === 'Income' ? t.type === 'income' : t.type === 'expense');
+    const txns = filtered.map(t => ({
+      name: t.name, cat: t.cat, initial: t.initial, when: t.when,
+      initialBg: t.type === 'income' ? 'rgba(74,222,128,.14)' : 'rgba(239,68,68,.13)',
+      initialColor: t.type === 'income' ? 'var(--positive)' : 'var(--negative)',
+      amountText: (t.amount > 0 ? '+' : '') + this.fmt(t.amount),
+      amountColor: t.amount > 0 ? 'var(--positive)' : 'var(--negative)',
+    }));
+
+    const mlabels = ['Jul','Ago','Set','Out','Nov','Dez','Jan','Fev','Mar','Abr','Mai','Jun'];
+    const minc = [62,58,70,66,80,92,64,60,78,72,86,95];
+    const mexp = [40,52,46,55,48,64,42,47,54,45,58,52];
+    const months = mlabels.map((label,i) => ({ label, inc: minc[i] + '%', exp: mexp[i] + '%' }));
+    const months6 = months.slice(6).map(m => ({ label: m.label, inc: m.inc, exp: m.exp }));
+
+    const catNames = ['Moradia','Alimentação','Transporte','Assinaturas','Compras','Saúde'];
+    const cats = catNames.map(name => {
+      const active = this.state.cat === name;
+      const style = active
+        ? 'padding:10px 16px;border-radius:11px;font:700 13px Inter;cursor:pointer;background:var(--primary);color:#04120a;border:1px solid var(--primary)'
+        : 'padding:10px 16px;border-radius:11px;font:600 13px Inter;cursor:pointer;background:var(--surface);color:var(--muted);border:1px solid var(--border)';
+      return { name, style, onClick: () => this.setState({ cat: name }) };
+    });
+
+    const recurOn = this.state.recur;
+    const recurTrack = 'width:46px;height:27px;border-radius:20px;padding:3px;cursor:pointer;display:flex;' +
+      (recurOn ? 'background:var(--primary);justify-content:flex-end' : 'background:var(--inset);justify-content:flex-start');
+    const recurKnob = 'width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3)';
+
+    return {
+      txns, months, months6, cats,
+      tabAll: this.tabStyle('All'), tabInc: this.tabStyle('Income'), tabExp: this.tabStyle('Expenses'),
+      filterAll: () => this.setState({ filter:'All' }),
+      filterInc: () => this.setState({ filter:'Income' }),
+      filterExp: () => this.setState({ filter:'Expenses' }),
+      typeInc: this.typeStyle('income'), typeExp: this.typeStyle('expense'),
+      setIncome: () => this.setState({ txType:'income' }),
+      setExpense: () => this.setState({ txType:'expense' }),
+      amountColor: this.state.txType === 'income' ? 'var(--positive)' : 'var(--text)',
+      recurTrack, recurKnob, toggleRecur: () => this.setState(s => ({ recur: !s.recur })),
+      segDark: this.segStyle('dark'), segLight: this.segStyle('light'),
+      toggleTheme: () => this.setState(s => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
+      themeIcon: this.state.theme === 'dark' ? 'ESC' : 'CLR',
+      goNew: () => {},
+    };
+  }
+}
+</script>
+</body>
+</html>

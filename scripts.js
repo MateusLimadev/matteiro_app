@@ -107,6 +107,8 @@ function showApp() {
   if (nameEl) nameEl.textContent = nome;
   const sbName = el('sb-user-name');
   if (sbName) sbName.textContent = nome;
+  const sbAvatar = el('sb-user-avatar');
+  if (sbAvatar) sbAvatar.textContent = (S.user.nome || nome).split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase().slice(0,2);
   updateMonthLabel();
   loadCategories(() => loadDashboard());
   _applyTheme(localStorage.getItem('matteiro-theme') || 'dark');
@@ -315,6 +317,17 @@ async function loadDashboard() {
   el('stat-saldo').className      = 'hero-amount ' + (saldo >= 0 ? 'positive' : 'negative');
   el('stat-entradas').textContent = fmt(totalEntradas);
   el('stat-saidas').textContent   = fmt(totalSaidas);
+
+  // Hero badge: mostra % de economia
+  const badgeEl = el('hero-badge');
+  if (badgeEl && totalEntradas > 0) {
+    const pct = Math.round((saldo / totalEntradas) * 100);
+    badgeEl.textContent = (pct >= 0 ? '▲ ' : '▼ ') + Math.abs(pct) + '% guardado';
+    badgeEl.className = 'hero-badge' + (pct >= 0 ? '' : ' negative');
+    badgeEl.classList.remove('hidden');
+  } else if (badgeEl) {
+    badgeEl.classList.add('hidden');
+  }
 
   // Upcoming bills (next 7 days)
   const recs  = await _fetchRecorrentes();

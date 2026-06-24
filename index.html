@@ -122,11 +122,12 @@
   <!-- SIDEBAR (desktop only) -->
   <aside class="sidebar">
     <div class="sb-brand">
-      <img src="logo-icone.png" alt="Matteiro" class="sb-logo-img">
+      <div class="sb-logo-diamond"></div>
       <span class="sb-name">Matteiro</span>
     </div>
 
     <nav class="sb-nav">
+      <span class="sb-nav-label">PRINCIPAL</span>
       <button class="sb-item active" onclick="switchTab('dashboard', this)" data-tab="dashboard">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Início
@@ -151,7 +152,10 @@
         <span id="sb-theme-label">Modo escuro</span>
       </button>
       <div class="sb-user">
-        <span id="sb-user-name" class="sb-user-name"></span>
+        <div class="sb-user-avatar" id="sb-user-avatar"></div>
+        <div class="sb-user-info">
+          <span id="sb-user-name" class="sb-user-name"></span>
+        </div>
         <button class="sb-logout" onclick="handleLogout()" title="Sair">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
@@ -181,20 +185,21 @@
           <button class="nav-arrow" onclick="changeMonth(1)">›</button>
         </div>
 
-        <p class="hero-eyebrow">Saldo do mês</p>
+        <div class="hero-eyebrow-row">
+          <p class="hero-eyebrow">Saldo do mês</p>
+          <span id="hero-badge" class="hero-badge hidden"></span>
+        </div>
         <p id="stat-saldo" class="hero-amount positive">R$ 0,00</p>
 
         <div class="hero-flow">
           <div class="flow-col">
-            <span class="flow-arrow in">↓</span>
+            <span class="flow-label">↑ Receitas</span>
             <span id="stat-entradas" class="flow-value in">R$ 0,00</span>
-            <span class="flow-label">Entradas</span>
           </div>
           <div class="flow-sep"></div>
           <div class="flow-col">
-            <span class="flow-arrow out">↑</span>
+            <span class="flow-label">↓ Despesas</span>
             <span id="stat-saidas" class="flow-value out">R$ 0,00</span>
-            <span class="flow-label">Saídas</span>
           </div>
         </div>
       </div>
@@ -360,7 +365,7 @@
             <button id="rel-filter-saida"   class="tx-filter-btn"        onclick="relFilterTx('saida')">Saídas</button>
             <button id="rel-filter-entrada" class="tx-filter-btn"        onclick="relFilterTx('entrada')">Entradas</button>
           </div>
-          <div id="rel-detail-list" class="tx-list"></div>
+          <div id="rel-detail-list" class="tx-list tx-list--card"></div>
           <div id="rel-detail-total" class="rel-detail-total"></div>
         </div>
 
