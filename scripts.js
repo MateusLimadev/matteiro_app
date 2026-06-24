@@ -534,17 +534,22 @@ async function handleAddRecorrente(e) {
 
 // --- Relatório ----------------------------------------------
 
+let _relMonthTxs = []; // cache para filtro por categoria
+
 async function loadRelatorio() {
   el('rel-year').textContent = S.year;
+  closeCatDetail();
 
   const [monthTxs, yearTxs] = await Promise.all([
     _fetchTransactions(S.month, S.year),
     _fetchTransactionsYear(S.year)
   ]);
 
+  _relMonthTxs = monthTxs || [];
+
   // Category donut (saidas only)
   const byCategory = {};
-  (monthTxs || []).filter(t => t.tipo === 'saida').forEach(t => {
+  _relMonthTxs.filter(t => t.tipo === 'saida').forEach(t => {
     byCategory[t.categoria] = (byCategory[t.categoria] || 0) + parseFloat(t.valor_brl);
   });
   renderCatChart(byCategory);
@@ -559,6 +564,25 @@ async function loadRelatorio() {
     else                      monthly[m].saidas   += v;
   });
   renderAnualChart(monthly);
+}
+
+function showCatDetail(catName) {
+  const txs = _relMonthTxs.filter(t => t.categoria === catName);
+  const total = txs.reduce((s, t) => s + (parseFloat(t.valor_brl) || 0), 0);
+
+  el('rel-detail-title').textContent = catName;
+  el('rel-detail-list').innerHTML = txs.length
+    ? txs.map(txRow).join('')
+    : '<p class="empty-state">Sem transações.</p>';
+  el('rel-detail-total').textContent = `Total: ${fmt(total)}`;
+
+  el('rel-cat-detail').classList.remove('hidden');
+  el('rel-cat-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeCatDetail() {
+  const panel = el('rel-cat-detail');
+  if (panel) panel.classList.add('hidden');
 }
 
 function renderCatChart(data) {
@@ -588,10 +612,10 @@ function renderCatChart(data) {
 
   const total = values.reduce((a, b) => a + b, 0);
   legend.innerHTML = labels.map((l, i) => `
-    <div class="legend-item">
+    <button class="legend-item legend-item--btn" onclick="showCatDetail('${esc(l)}')">
       <span class="legend-dot" style="background:${colors[i]}"></span>
       <span>${esc(l)}: ${fmt(values[i])} (${total ? Math.round(values[i]/total*100) : 0}%)</span>
-    </div>
+    </button>
   `).join('');
 }
 
