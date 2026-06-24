@@ -500,6 +500,31 @@ body {
 }
 .up-dia { font-size: 0.72rem; color: var(--amber); font-weight: 700; }
 
+/* ── Transaction filter bar ─────────────────────────────────── */
+.tx-filter-bar {
+  display: flex; gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tx-filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-2);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.tx-filter-btn:hover { border-color: var(--primary); color: var(--text); }
+.tx-filter-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
 /* ── Transaction list ───────────────────────────────────────── */
 .tx-list { display: flex; flex-direction: column; gap: 2px; }
 

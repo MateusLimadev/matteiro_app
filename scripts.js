@@ -288,20 +288,21 @@ function updateMonthLabel() {
 
 // --- Dashboard ----------------------------------------------
 
+let _allTxs    = [];   // cache das transações do mês
+let _txFilter  = 'todos'; // 'todos' | 'entrada' | 'saida'
+
 async function loadDashboard() {
   const txs = await _fetchTransactions(S.month, S.year);
   if (txs === null) return;
 
+  _allTxs = txs;
+
   let totalEntradas = 0, totalSaidas = 0;
-  const byCategory = {};
 
   txs.forEach(t => {
     const v = parseFloat(t.valor_brl) || 0;
     if (t.tipo === 'entrada') totalEntradas += v;
-    else {
-      totalSaidas += v;
-      byCategory[t.categoria] = (byCategory[t.categoria] || 0) + v;
-    }
+    else                      totalSaidas   += v;
   });
 
   const saldo = totalEntradas - totalSaidas;
@@ -312,9 +313,10 @@ async function loadDashboard() {
   el('stat-saidas').textContent   = fmt(totalSaidas);
 
   // Upcoming bills (next 7 days)
-  const recs = await _fetchRecorrentes();
+  const recs  = await _fetchRecorrentes();
   const today = new Date().getDate();
-  const upcoming = (recs || []).filter(r => r.ativo && parseInt(r.dia_vencimento) >= today
+  const upcoming = (recs || []).filter(r => r.ativo
+    && parseInt(r.dia_vencimento) >= today
     && parseInt(r.dia_vencimento) <= today + 7);
 
   const upWrap = el('upcoming-wrap');
@@ -330,13 +332,39 @@ async function loadDashboard() {
     upWrap.classList.add('hidden');
   }
 
-  // Recent transactions (last 10)
+  _renderTxList();
+}
+
+function filterTx(tipo) {
+  _txFilter = tipo;
+
+  // Atualiza botões ativos
+  ['todos', 'saida', 'entrada'].forEach(t => {
+    const btn = el('filter-' + t);
+    if (btn) btn.classList.toggle('active', t === tipo);
+  });
+
+  _renderTxList();
+}
+
+function _renderTxList() {
   const list = el('recent-list');
-  if (!txs.length) {
-    list.innerHTML = '<p class="empty-state">Nenhuma transação neste mês.</p>';
+
+  const visible = _txFilter === 'todos'
+    ? _allTxs
+    : _allTxs.filter(t => t.tipo === _txFilter);
+
+  if (!visible.length) {
+    const msg = _txFilter === 'todos'
+      ? 'Nenhuma transação neste mês.'
+      : _txFilter === 'saida'
+        ? 'Nenhuma saída neste mês.'
+        : 'Nenhuma entrada neste mês.';
+    list.innerHTML = `<p class="empty-state">${msg}</p>`;
     return;
   }
-  list.innerHTML = txs.slice(0, 10).map(txRow).join('');
+
+  list.innerHTML = visible.map(txRow).join('');
 }
 
 function txRow(t) {

@@ -211,9 +211,9 @@
           <div id="upcoming-list" class="upcoming-list"></div>
         </div>
 
-        <!-- Recent transactions -->
+        <!-- Transactions -->
         <div class="section-header">
-          <span class="section-title">Últimas transações</span>
+          <span class="section-title">Transações</span>
           <div style="display:flex;align-items:center;gap:.25rem">
             <span id="user-name-dash" style="font-size:.72rem;color:var(--muted);margin-right:.25rem"></span>
             <button class="theme-btn-mobile" onclick="toggleTheme()" id="mobile-theme-btn" title="Alternar tema">
@@ -223,6 +223,11 @@
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </button>
           </div>
+        </div>
+        <div class="tx-filter-bar">
+          <button id="filter-todos"    class="tx-filter-btn active" onclick="filterTx('todos')">Todos</button>
+          <button id="filter-saida"    class="tx-filter-btn"        onclick="filterTx('saida')">Saídas</button>
+          <button id="filter-entrada"  class="tx-filter-btn"        onclick="filterTx('entrada')">Entradas</button>
         </div>
         <div id="recent-list" class="tx-list">
           <p class="empty-state">Nenhuma transação neste mês.</p>
