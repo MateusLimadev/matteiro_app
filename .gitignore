@@ -1,0 +1,8 @@
+# Google Apps Script (não precisa ir pro Vercel)
+*.gs
+DEPLOY.md
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini

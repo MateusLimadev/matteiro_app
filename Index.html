@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#08090D">
+  <title>Matteiro 💰</title>
+
+  <!-- Aplica tema salvo antes de renderizar (evita flash) -->
+  <script>
+    (function() {
+      var t = localStorage.getItem('matteiro-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <!-- LOCAL: usa arquivos separados -->
+  <link rel="stylesheet" href="styles.css">
+  <!-- APPS SCRIPT: substitua a linha acima por: <?!= include('styles'); ?> -->
+</head>
+<body>
+
+<!-- =====================================================
+     AUTH SCREENS
+====================================================== -->
+<div id="auth-wrap" class="auth-wrap hidden">
+
+  <!-- LOGIN -->
+  <div id="screen-login" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand">
+        <span class="brand-icon">💰</span>
+        <h1 class="brand-name">Matteiro</h1>
+        <p class="brand-sub">Seu controle financeiro pessoal</p>
+      </div>
+
+      <form id="form-login" onsubmit="handleLogin(event)">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="voce@email.com" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <div class="input-eye">
+            <input type="password" id="login-senha" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="eye-btn" onclick="togglePwd('login-senha')">👁</button>
+          </div>
+        </div>
+        <p id="login-error" class="form-error hidden"></p>
+        <button type="submit" class="btn-primary" id="btn-login">Entrar</button>
+      </form>
+
+      <div class="auth-links">
+        <button class="link-btn" onclick="showScreen('screen-forgot')">Esqueci minha senha</button>
+        <span>·</span>
+        <button class="link-btn" onclick="showScreen('screen-register')">Criar conta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="screen-register" class="auth-screen hidden">
+    <div class="auth-card">
+      <button class="back-btn" onclick="showScreen('screen-login')">← Voltar</button>
+      <h2 class="auth-title">Criar conta</h2>
+
+      <form id="form-register" onsubmit="handleRegister(event)">
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" id="reg-nome" placeholder="Seu nome" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="voce@email.com" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Senha <span class="hint-label">(mínimo 8 caracteres)</span></label>
+          <div class="input-eye">
+            <input type="password" id="reg-senha" placeholder="••••••••" required autocomplete="new-password" minlength="8">
+            <button type="button" class="eye-btn" onclick="togglePwd('reg-senha')">👁</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirmar senha</label>
+          <div class="input-eye">
+            <input type="password" id="reg-senha2" placeholder="••••••••" required autocomplete="new-password">
+            <button type="button" class="eye-btn" onclick="togglePwd('reg-senha2')">👁</button>
+          </div>
+        </div>
+        <p id="reg-error" class="form-error hidden"></p>
+        <button type="submit" class="btn-primary" id="btn-register">Criar conta</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FORGOT PASSWORD -->
+  <div id="screen-forgot" class="auth-screen hidden">
+    <div class="auth-card">
+      <button class="back-btn" onclick="showScreen('screen-login')">← Voltar</button>
+      <h2 class="auth-title">Esqueci minha senha</h2>
+      <p class="auth-desc">Informe seu email e enviaremos um link para criar uma nova senha.</p>
+
+      <form id="form-forgot" onsubmit="handleForgot(event)">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="forgot-email" placeholder="voce@email.com" required>
+        </div>
+        <p id="forgot-msg" class="form-success hidden"></p>
+        <button type="submit" class="btn-primary" id="btn-forgot">Enviar link</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- =====================================================
+     MAIN APP
+====================================================== -->
+<div id="app-wrap" class="app-wrap hidden">
+
+  <!-- SIDEBAR (desktop only) -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <span class="sb-logo">💰</span>
+      <span class="sb-name">Matteiro</span>
+    </div>
+
+    <nav class="sb-nav">
+      <button class="sb-item active" onclick="switchTab('dashboard', this)" data-tab="dashboard">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Início
+      </button>
+      <button class="sb-item" onclick="switchTab('nova', this)" data-tab="nova">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nova transação
+      </button>
+      <button class="sb-item" onclick="switchTab('recorrentes', this)" data-tab="recorrentes">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Contas fixas
+      </button>
+      <button class="sb-item" onclick="switchTab('relatorio', this)" data-tab="relatorio">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Relatório
+      </button>
+    </nav>
+
+    <div class="sb-footer">
+      <button class="sb-theme-btn" onclick="toggleTheme()">
+        <svg id="sb-theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span id="sb-theme-label">Modo escuro</span>
+      </button>
+      <div class="sb-user">
+        <span id="sb-user-name" class="sb-user-name"></span>
+        <button class="sb-logout" onclick="handleLogout()" title="Sair">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR (hidden on dashboard, shown on other tabs) -->
+  <header id="topbar" class="topbar topbar--hidden">
+    <span id="topbar-title" class="topbar-title"></span>
+    <div class="topbar-right">
+      <span id="user-greeting" class="user-greeting"></span>
+      <button class="icon-btn" onclick="handleLogout()" title="Sair">⎋</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- ── DASHBOARD ─────────────────────────────────── -->
+    <section id="tab-dashboard" class="tab-screen active">
+
+      <!-- Hero Card -->
+      <div class="hero-card">
+        <div class="hero-month">
+          <button class="nav-arrow" onclick="changeMonth(-1)">‹</button>
+          <span id="month-label" class="month-label"></span>
+          <button class="nav-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+
+        <p class="hero-eyebrow">Saldo do mês</p>
+        <p id="stat-saldo" class="hero-amount positive">R$ 0,00</p>
+
+        <div class="hero-flow">
+          <div class="flow-col">
+            <span class="flow-arrow in">↓</span>
+            <span id="stat-entradas" class="flow-value in">R$ 0,00</span>
+            <span class="flow-label">Entradas</span>
+          </div>
+          <div class="flow-sep"></div>
+          <div class="flow-col">
+            <span class="flow-arrow out">↑</span>
+            <span id="stat-saidas" class="flow-value out">R$ 0,00</span>
+            <span class="flow-label">Saídas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content below hero -->
+      <div class="content-area">
+
+        <!-- Upcoming bills -->
+        <div id="upcoming-wrap" class="hidden">
+          <div class="section-header">
+            <span class="section-title">Vencendo em breve</span>
+          </div>
+          <div id="upcoming-list" class="upcoming-list"></div>
+        </div>
+
+        <!-- Recent transactions -->
+        <div class="section-header">
+          <span class="section-title">Últimas transações</span>
+          <div style="display:flex;align-items:center;gap:.25rem">
+            <span id="user-name-dash" style="font-size:.72rem;color:var(--muted);margin-right:.25rem"></span>
+            <button class="theme-btn-mobile" onclick="toggleTheme()" id="mobile-theme-btn" title="Alternar tema">
+              <svg id="mobile-theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;stroke-width:1.75"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="handleLogout()" title="Sair">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="recent-list" class="tx-list">
+          <p class="empty-state">Nenhuma transação neste mês.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── NOVA TRANSAÇÃO ─────────────────────────────── -->
+    <section id="tab-nova" class="tab-screen" style="padding-top:72px">
+      <div class="form-area">
+        <div class="form-card">
+          <div class="tipo-toggle">
+            <button id="btn-tipo-saida" class="tipo-btn tipo-saida active" onclick="setTipo('saida')">↑ Saída</button>
+            <button id="btn-tipo-entrada" class="tipo-btn tipo-entrada" onclick="setTipo('entrada')">↓ Entrada</button>
+          </div>
+
+          <form id="form-nova" onsubmit="handleAddTransaction(event)">
+            <div class="valor-row">
+              <div class="field flex-1">
+                <label>Valor</label>
+                <input type="number" id="tx-valor" placeholder="0,00" step="0.01" min="0.01" required>
+              </div>
+              <div class="field moeda-field">
+                <label>Moeda</label>
+                <select id="tx-moeda" onchange="onMoedaChange()">
+                  <option value="BRL">R$ BRL</option>
+                  <option value="USD">$ USD</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="usd-preview" class="usd-preview hidden">
+              <span id="usd-converted"></span>
+            </div>
+
+            <div class="field">
+              <label>Descrição</label>
+              <input type="text" id="tx-descricao" placeholder="Ex: Supermercado" required>
+            </div>
+
+            <div class="field">
+              <label>Categoria</label>
+              <select id="tx-categoria" required></select>
+            </div>
+
+            <div class="field">
+              <label>Data</label>
+              <input type="date" id="tx-data" required>
+            </div>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="tx-recorrente">
+              <span>Lançamento recorrente</span>
+            </label>
+
+            <p id="nova-error" class="form-error hidden"></p>
+            <button type="submit" class="btn-primary" id="btn-nova">Salvar transação</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CONTAS FIXAS ───────────────────────────────── -->
+    <section id="tab-recorrentes" class="tab-screen" style="padding-top:72px">
+
+      <div class="screen-header">
+        <span class="screen-title">Contas fixas</span>
+        <button class="btn-add" onclick="toggleAddRecorrente()">＋ Nova</button>
+      </div>
+
+      <div class="form-area">
+        <div id="form-rec-wrap" class="form-card hidden">
+          <p class="form-title">Nova conta fixa</p>
+          <form id="form-recorrente" onsubmit="handleAddRecorrente(event)">
+            <div class="field">
+              <label>Descrição</label>
+              <input type="text" id="rec-descricao" placeholder="Ex: Aluguel" required>
+            </div>
+            <div class="field">
+              <label>Categoria</label>
+              <select id="rec-categoria" required></select>
+            </div>
+            <div class="valor-row">
+              <div class="field flex-1">
+                <label>Valor (R$)</label>
+                <input type="number" id="rec-valor" placeholder="0,00" step="0.01" min="0.01" required>
+              </div>
+              <div class="field moeda-field">
+                <label>Dia venc.</label>
+                <input type="number" id="rec-dia" placeholder="1" min="1" max="31" required>
+              </div>
+            </div>
+            <p id="rec-error" class="form-error hidden"></p>
+            <button type="submit" class="btn-primary">Salvar</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="rec-list" class="rec-list">
+        <p class="empty-state">Nenhuma conta fixa cadastrada.</p>
+      </div>
+    </section>
+
+    <!-- ── RELATÓRIO ──────────────────────────────────── -->
+    <section id="tab-relatorio" class="tab-screen" style="padding-top:72px">
+
+      <div class="month-selector">
+        <button class="nav-arrow" onclick="changeMonth(-1)">‹</button>
+        <span id="rel-month-label" class="month-label"></span>
+        <button class="nav-arrow" onclick="changeMonth(1)">›</button>
+      </div>
+
+      <div class="chart-area" style="margin-top:1rem">
+        <div class="chart-card">
+          <p class="chart-title">Gastos por categoria</p>
+          <div class="chart-wrap">
+            <canvas id="chart-categoria"></canvas>
+          </div>
+          <div id="chart-cat-legend" class="chart-legend"></div>
+        </div>
+
+        <div class="chart-card">
+          <p class="chart-title">Evolução anual · <span id="rel-year"></span></p>
+          <div class="chart-wrap chart-wrap-bar">
+            <canvas id="chart-anual"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('dashboard', this)" data-tab="dashboard">
+      <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      <span class="nav-label">Início</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('recorrentes', this)" data-tab="recorrentes">
+      <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
+      <span class="nav-label">Fixas</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('nova', this)" data-tab="nova">
+      <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      <span class="nav-label">Nova</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('relatorio', this)" data-tab="relatorio">
+      <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+      <span class="nav-label">Relatório</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- LOADING -->
+<div id="loading" class="loading-overlay">
+  <div class="spinner"></div>
+  <span class="loading-brand">Matteiro</span>
+</div>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- LOCAL: usa arquivos separados -->
+<script src="scripts.js"></script>
+<!-- APPS SCRIPT: substitua a linha acima por: <?!= include('scripts'); ?> -->
+
+<script>
+  // Topbar: esconde no dashboard, mostra nos outros
+  function _updateTopbar(tabName) {
+    const tb = document.getElementById('topbar');
+    if (tabName === 'dashboard') {
+      tb.classList.add('topbar--hidden');
+    } else {
+      tb.classList.remove('topbar--hidden');
+      document.getElementById('topbar-title').textContent =
+        { nova:'Nova Transação', recorrentes:'Contas Fixas', relatorio:'Relatório' }[tabName] || '';
+    }
+  }
+
+  // Patch switchTab to also update topbar & user name on dashboard
+  const _origSwitchTab = typeof switchTab !== 'undefined' ? switchTab : null;
+  document.addEventListener('DOMContentLoaded', () => {
+    // Show user name on dashboard header
+    const origShow = window.showApp;
+    window.showApp = function() {
+      origShow && origShow();
+      const nd = document.getElementById('user-name-dash');
+      if (nd && window.S && window.S.user) nd.textContent = S.user.nome.split(' ')[0];
+    };
+  });
+</script>
+</body>
+</html>
