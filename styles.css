@@ -828,6 +828,27 @@ body {
   margin-top: 0.75rem; text-align: right;
   font-size: 0.85rem; font-weight: 600; color: var(--primary-lt);
 }
+
+/* Inline category editor */
+.tx-meta--edit { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
+.cat-inline-select {
+  background: var(--surface-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-xs);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-family: inherit;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  max-width: 160px;
+}
+.cat-inline-select:hover,
+.cat-inline-select:focus { border-color: var(--primary); color: var(--text); outline: none; }
+.cat-inline-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.tx-meta-date { font-size: 0.72rem; color: var(--dim); }
 .legend-dot   { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
 /* ============================================================

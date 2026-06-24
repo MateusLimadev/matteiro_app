@@ -566,23 +566,94 @@ async function loadRelatorio() {
   renderAnualChart(monthly);
 }
 
+let _relCurrentCat = null;
+
 function showCatDetail(catName) {
-  const txs = _relMonthTxs.filter(t => t.categoria === catName);
-  const total = txs.reduce((s, t) => s + (parseFloat(t.valor_brl) || 0), 0);
+  _relCurrentCat = catName;
+  _renderCatDetail();
+  el('rel-cat-detail').classList.remove('hidden');
+  el('rel-cat-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function _renderCatDetail() {
+  const catName = _relCurrentCat;
+  const txs   = _relMonthTxs.filter(t => t.categoria === catName);
+  const total  = txs.reduce((s, t) => s + (parseFloat(t.valor_brl) || 0), 0);
 
   el('rel-detail-title').textContent = catName;
   el('rel-detail-list').innerHTML = txs.length
-    ? txs.map(txRow).join('')
+    ? txs.map(txRowEditable).join('')
     : '<p class="empty-state">Sem transações.</p>';
   el('rel-detail-total').textContent = `Total: ${fmt(total)}`;
+}
 
-  el('rel-cat-detail').classList.remove('hidden');
-  el('rel-cat-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function txRowEditable(t) {
+  const initials = (t.descricao || '?').slice(0, 2).toUpperCase();
+  const catOptions = S.cats
+    .filter(c => c.tipo === t.tipo)
+    .map(c => `<option value="${esc(c.nome)}" ${c.nome === t.categoria ? 'selected' : ''}>${esc(c.nome)}</option>`)
+    .join('');
+
+  return `
+    <div class="tx-item" id="txrow-${t.id}">
+      <div class="tx-avatar ${t.tipo}">${initials}</div>
+      <div class="tx-info">
+        <div class="tx-desc">${esc(t.descricao)}</div>
+        <div class="tx-meta tx-meta--edit">
+          <select class="cat-inline-select" onchange="saveTxCategory('${t.id}', this.value, this)"
+            title="Alterar categoria">
+            ${catOptions}
+          </select>
+          <span class="tx-meta-date">· ${fmtDate(t.data)}</span>
+        </div>
+      </div>
+      <div class="tx-right">
+        <span class="tx-valor ${t.tipo}">${t.tipo === 'entrada' ? '+' : '-'} ${fmt(t.valor_brl)}</span>
+        <button class="tx-del" onclick="deleteTx('${t.id}')" title="Excluir">✕</button>
+      </div>
+    </div>
+  `;
+}
+
+async function saveTxCategory(id, newCat, selectEl) {
+  selectEl.disabled = true;
+
+  const { error } = await sb.from('transacoes')
+    .update({ categoria: newCat })
+    .eq('id', id);
+
+  selectEl.disabled = false;
+
+  if (error) {
+    toast('Erro ao atualizar categoria.');
+    return;
+  }
+
+  // Atualiza o cache local
+  const tx = _relMonthTxs.find(t => t.id === id);
+  if (tx) tx.categoria = newCat;
+
+  // Atualiza também o cache do dashboard
+  const txDash = _allTxs.find(t => t.id === id);
+  if (txDash) txDash.categoria = newCat;
+
+  toast('Categoria atualizada. ✓');
+
+  // Re-renderiza o gráfico e mantém o painel aberto na categoria anterior
+  const byCategory = {};
+  _relMonthTxs.filter(t => t.tipo === 'saida').forEach(t => {
+    byCategory[t.categoria] = (byCategory[t.categoria] || 0) + parseFloat(t.valor_brl);
+  });
+  renderCatChart(byCategory);
+
+  // Re-renderiza o painel com a categoria atual (pode ter mudado)
+  _renderCatDetail();
 }
 
 function closeCatDetail() {
   const panel = el('rel-cat-detail');
   if (panel) panel.classList.add('hidden');
+  _relCurrentCat = null;
 }
 
 function renderCatChart(data) {
