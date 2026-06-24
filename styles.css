@@ -124,8 +124,8 @@ body {
 .brand { text-align: center; margin-bottom: 2rem; }
 
 .brand-logo-img {
-  width: 80px; height: 80px;
-  border-radius: 20px;
+  width: 72px; height: 72px;
+  border-radius: 18px;
   margin-bottom: 0.75rem;
   object-fit: cover;
 }
@@ -259,9 +259,15 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-.sb-wordmark {
-  height: 30px; width: auto;
-  object-fit: contain;
+.sb-logo-img {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sb-name {
+  font-size: 1rem; font-weight: 700; letter-spacing: -0.02em;
 }
 
 .sb-nav {
