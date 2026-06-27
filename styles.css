@@ -607,6 +607,13 @@ body {
   width: 100%;
 }
 .tx-edit-cat { width: 100%; max-width: 100%; font-size: 0.82rem; padding: 5px 8px; }
+input[type="date"].tx-edit-date { color-scheme: dark; }
+
+.tx-edit-row2 {
+  display: flex; gap: 8px;
+}
+.tx-edit-row2 .tx-edit-cat { flex: 1; }
+.tx-edit-date { width: 130px; flex-shrink: 0; }
 
 .tx-edit-actions {
   display: flex; gap: 8px;
