@@ -47,13 +47,42 @@ const DEFAULT_CATEGORIES = [
 window.addEventListener('load', async () => {
   // Detecta redirecionamento de confirmação de email
   const hash = window.location.hash;
-  const isEmailConfirm = hash.includes('type=signup') || hash.includes('type=email_change');
+  const hashParams = new URLSearchParams(hash.slice(1));
+  const hashType       = hashParams.get('type');
+  const isEmailConfirm = hashType === 'signup' || hashType === 'email_change';
+  const isRecovery     = hashType === 'recovery';
+  const isHashError    = hashParams.has('error');
+
+  history.replaceState(null, '', window.location.pathname); // sempre limpa o hash
+
+  if (isHashError) {
+    const code = hashParams.get('error_code') || '';
+    const desc = hashParams.get('error_description') || '';
+    hide('loading');
+    // Exibe mensagem de erro amigável na tela de auth
+    showAuth();
+    const errEl = el('login-error');
+    if (errEl) {
+      let msg = 'Erro ao confirmar email.';
+      if (code === 'otp_expired') msg = 'O link de confirmação expirou. Cadastre-se novamente ou solicite um novo email.';
+      errEl.textContent = msg;
+      errEl.classList.remove('hidden');
+    }
+    return;
+  }
 
   if (isEmailConfirm) {
-    // Limpa o hash da URL sem recarregar
-    history.replaceState(null, '', window.location.pathname);
     hide('loading');
     el('email-confirmed').classList.remove('hidden');
+    return;
+  }
+
+  if (isRecovery) {
+    // Supabase já processou o token via getSession abaixo — só mostrar a tela
+    // mas precisamos garantir que a sessão seja carregada primeiro
+    hide('loading');
+    show('auth-wrap');
+    showScreen('screen-reset');
     return;
   }
 
@@ -247,6 +276,47 @@ async function handleForgot(e) {
     : 'Se este email existir, você receberá as instruções.';
   msgEl.className = error ? 'form-error' : 'form-success';
   msgEl.classList.remove('hidden');
+}
+
+// Reset password (chegou pelo link do email)
+async function handleReset(e) {
+  e.preventDefault();
+  const senha  = el('reset-senha').value;
+  const senha2 = el('reset-senha2').value;
+  const btn    = el('btn-reset');
+  const errEl  = el('reset-error');
+
+  errEl.classList.add('hidden');
+
+  if (senha !== senha2) {
+    errEl.textContent = 'As senhas não coincidem.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+
+  const { error } = await sb.auth.updateUser({ password: senha });
+
+  btn.disabled = false;
+  btn.textContent = 'Salvar nova senha';
+
+  if (error) {
+    errEl.textContent = _authError(error.message);
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  // Desloga e manda pro login com mensagem de sucesso
+  await sb.auth.signOut();
+  showScreen('screen-login');
+  const loginErr = el('login-error');
+  if (loginErr) {
+    loginErr.textContent = '✅ Senha alterada com sucesso! Faça login com a nova senha.';
+    loginErr.className = 'form-success';
+    loginErr.classList.remove('hidden');
+  }
 }
 
 // Traduz erros do Supabase para português

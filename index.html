@@ -114,6 +114,35 @@
     </div>
   </div>
 
+  <!-- RESET PASSWORD (chegou pelo link do email) -->
+  <div id="screen-reset" class="auth-screen hidden">
+    <div class="auth-card">
+      <div class="brand">
+        <img src="logo-icone.png" alt="Matteiro" class="brand-logo-img">
+        <p class="brand-sub">Criar nova senha</p>
+      </div>
+
+      <form id="form-reset" onsubmit="handleReset(event)">
+        <div class="field">
+          <label>Nova senha <span class="hint-label">(mínimo 8 caracteres)</span></label>
+          <div class="input-eye">
+            <input type="password" id="reset-senha" placeholder="••••••••" required minlength="8" autocomplete="new-password">
+            <button type="button" class="eye-btn" onclick="togglePwd('reset-senha')">👁</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirmar nova senha</label>
+          <div class="input-eye">
+            <input type="password" id="reset-senha2" placeholder="••••••••" required autocomplete="new-password">
+            <button type="button" class="eye-btn" onclick="togglePwd('reset-senha2')">👁</button>
+          </div>
+        </div>
+        <p id="reset-error" class="form-error hidden"></p>
+        <button type="submit" class="btn-primary" id="btn-reset">Salvar nova senha</button>
+      </form>
+    </div>
+  </div>
+
 </div>
 
 <!-- =====================================================
