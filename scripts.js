@@ -45,6 +45,18 @@ const DEFAULT_CATEGORIES = [
 
 // --- Init ---------------------------------------------------
 window.addEventListener('load', async () => {
+  // Detecta redirecionamento de confirmação de email
+  const hash = window.location.hash;
+  const isEmailConfirm = hash.includes('type=signup') || hash.includes('type=email_change');
+
+  if (isEmailConfirm) {
+    // Limpa o hash da URL sem recarregar
+    history.replaceState(null, '', window.location.pathname);
+    hide('loading');
+    el('email-confirmed').classList.remove('hidden');
+    return;
+  }
+
   // Timeout de segurança — se travar por mais de 6s, mostra auth
   const safetyTimer = setTimeout(() => {
     console.warn('Timeout na inicialização — verifique se está rodando em http:// e não em file://');
@@ -267,6 +279,7 @@ function switchTab(name, btn) {
   if (name === 'nova')        prepareNovaForm();
   if (name === 'recorrentes') loadRecorrentes();
   if (name === 'relatorio')   loadRelatorio();
+  if (name === 'definicoes')  renderDefLists();
 }
 
 // --- Month navigation ---------------------------------------
@@ -957,6 +970,66 @@ function populateCatSelect(selectId, tipo) {
     .filter(c => c.tipo === tipo)
     .map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`)
     .join('');
+}
+
+// --- Definições (category management) -----------------------
+
+let _defTipo = 'saida';
+
+function defSetTipo(tipo) {
+  _defTipo = tipo;
+  el('def-tipo-saida').classList.toggle('active', tipo === 'saida');
+  el('def-tipo-entrada').classList.toggle('active', tipo === 'entrada');
+}
+
+function renderDefLists() {
+  ['saida', 'entrada'].forEach(tipo => {
+    const container = el('def-list-' + tipo);
+    if (!container) return;
+    const cats = S.cats.filter(c => c.tipo === tipo);
+    if (!cats.length) {
+      container.innerHTML = '<p class="empty-state" style="padding:1rem 0">Nenhuma categoria.</p>';
+      return;
+    }
+    container.innerHTML = cats.map(c => `
+      <div class="def-cat-item">
+        <span class="def-cat-dot" style="background:${c.cor || '#607D8B'}"></span>
+        <span class="def-cat-nome">${esc(c.nome)}</span>
+        <button class="def-cat-del" onclick="defDeleteCat('${c.id}','${esc(c.nome)}')" title="Excluir">✕</button>
+      </div>
+    `).join('');
+  });
+}
+
+async function defAddCat() {
+  const nome = (el('def-nome').value || '').trim();
+  const cor  = el('def-cor').value || '#22C55E';
+  if (!nome) { toast('Digite um nome para a categoria.'); return; }
+  if (S.cats.find(c => c.nome === nome && c.tipo === _defTipo)) {
+    toast('Categoria já existe.'); return;
+  }
+
+  const { data, error } = await sb.from('categorias')
+    .insert({ nome, tipo: _defTipo, cor, user_id: S.user.id })
+    .select().single();
+
+  if (error) { toast('Erro ao criar categoria.'); return; }
+
+  S.cats.push(data);
+  el('def-nome').value = '';
+  renderDefLists();
+  toast('Categoria criada. ✓');
+}
+
+async function defDeleteCat(id, nome) {
+  if (!confirm(`Excluir categoria "${nome}"?`)) return;
+
+  const { error } = await sb.from('categorias').delete().eq('id', id);
+  if (error) { toast('Erro ao excluir.'); return; }
+
+  S.cats = S.cats.filter(c => c.id !== id);
+  renderDefLists();
+  toast('Categoria excluída.');
 }
 
 // --- Data helpers -------------------------------------------

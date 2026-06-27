@@ -146,6 +146,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Relatório
       </button>
+      <button class="sb-item" onclick="switchTab('definicoes', this)" data-tab="definicoes">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Definições
+      </button>
     </nav>
 
     <div class="sb-footer">
@@ -380,6 +384,45 @@
       </div>
     </section>
 
+    <!-- ── DEFINIÇÕES ─────────────────────────────────── -->
+    <section id="tab-definicoes" class="tab-screen" style="padding-top:72px">
+      <div class="screen-header">
+        <span class="screen-title">Definições</span>
+      </div>
+
+      <div class="content-area">
+
+        <!-- Nova categoria -->
+        <div class="section-header" style="margin-bottom:0.5rem">
+          <span class="section-title">Nova categoria</span>
+        </div>
+        <div class="def-card">
+          <div class="tipo-toggle" id="def-tipo-toggle">
+            <button type="button" class="tipo-btn tipo-saida active" id="def-tipo-saida"   onclick="defSetTipo('saida')">Saída</button>
+            <button type="button" class="tipo-btn tipo-entrada"      id="def-tipo-entrada" onclick="defSetTipo('entrada')">Entrada</button>
+          </div>
+          <div class="def-new-row">
+            <input type="text" id="def-nome" class="field-input" placeholder="Nome da categoria" maxlength="40">
+            <input type="color" id="def-cor" class="def-color-picker" value="#22C55E" title="Cor">
+            <button class="btn-primary def-add-btn" onclick="defAddCat()">+ Adicionar</button>
+          </div>
+        </div>
+
+        <!-- Lista categorias de saída -->
+        <div class="section-header" style="margin-top:1.25rem;margin-bottom:0.5rem">
+          <span class="section-title">Categorias de saída</span>
+        </div>
+        <div id="def-list-saida" class="def-cat-list"></div>
+
+        <!-- Lista categorias de entrada -->
+        <div class="section-header" style="margin-top:1.25rem;margin-bottom:0.5rem">
+          <span class="section-title">Categorias de entrada</span>
+        </div>
+        <div id="def-list-entrada" class="def-cat-list"></div>
+
+      </div>
+    </section>
+
   </main>
 
   <!-- BOTTOM NAVIGATION -->
@@ -400,12 +443,24 @@
       <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
       <span class="nav-label">Relatório</span>
     </button>
+    <button class="nav-item" onclick="switchTab('definicoes', this)" data-tab="definicoes">
+      <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+      <span class="nav-label">Definições</span>
+    </button>
   </nav>
 
 </div>
 
 <!-- TOAST -->
 <div id="toast" class="toast hidden"></div>
+
+<!-- EMAIL CONFIRMED -->
+<div id="email-confirmed" class="loading-overlay hidden" style="gap:1.25rem;text-align:center;padding:2rem">
+  <div style="font-size:3rem">✅</div>
+  <div class="loading-brand" style="font-size:1.4rem">Email confirmado!</div>
+  <p style="color:var(--muted);font-size:0.9rem;max-width:280px">Sua conta foi verificada com sucesso. Faça login para continuar.</p>
+  <button class="btn-primary" onclick="document.getElementById('email-confirmed').classList.add('hidden');showAuth();" style="width:auto;padding:0.7rem 2rem">Fazer login</button>
+</div>
 
 <!-- LOADING -->
 <div id="loading" class="loading-overlay">
