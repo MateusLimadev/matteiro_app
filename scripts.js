@@ -9,8 +9,8 @@ const SUPABASE_URL = 'https://bmdeefzvunqxmbxprgds.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kdor7kz8Mj0LeLz-EhJ80g_QzQy9FR8';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- Gemini API key (compartilhada para todos os usuários) --
-const GEMINI_KEY = 'AQ.Ab8RN6JKMuCV2l4C7mt5Zv-YRYBdfRFisnpHadTuDHpjZSkE9g';
+// --- Gemini API key (carregada do Supabase após login) ------
+let GEMINI_KEY = '';
 
 // --- State --------------------------------------------------
 const S = {
@@ -156,6 +156,7 @@ function showApp() {
   updateMonthLabel();
   loadCategories(() => loadDashboard());
   _applyTheme(localStorage.getItem('matteiro-theme') || 'dark');
+  _loadAppConfig();
 }
 
 function showScreen(id) {
@@ -1103,6 +1104,14 @@ async function defDeleteCat(id, nome) {
   S.cats = S.cats.filter(c => c.id !== id);
   renderDefLists();
   toast('Categoria excluída.');
+}
+
+async function _loadAppConfig() {
+  const { data } = await sb.from('app_config').select('key, value');
+  if (!data) return;
+  data.forEach(row => {
+    if (row.key === 'gemini_key') GEMINI_KEY = row.value;
+  });
 }
 
 function _getGeminiKey() {
