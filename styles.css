@@ -1042,10 +1042,10 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 }
 
 .def-add-btn {
-  flex-shrink: 0;
-  padding: 0.55rem 1rem;
-  font-size: 0.85rem;
-  white-space: nowrap;
+  width: 100%;
+  margin-top: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
 }
 
 .def-cat-list {
