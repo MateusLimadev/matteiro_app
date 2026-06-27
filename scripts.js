@@ -9,6 +9,9 @@ const SUPABASE_URL = 'https://bmdeefzvunqxmbxprgds.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_kdor7kz8Mj0LeLz-EhJ80g_QzQy9FR8';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// --- Gemini API key (compartilhada para todos os usuários) --
+const GEMINI_KEY = 'AQ.Ab8RN6JKMuCV2l4C7mt5Zv-YRYBdfRFisnpHadTuDHpjZSkE9g';
+
 // --- State --------------------------------------------------
 const S = {
   user:   null,   // { id, email, nome }
@@ -1100,6 +1103,196 @@ async function defDeleteCat(id, nome) {
   S.cats = S.cats.filter(c => c.id !== id);
   renderDefLists();
   toast('Categoria excluída.');
+}
+
+function _getGeminiKey() {
+  return GEMINI_KEY;
+}
+
+// --- Importar extrato PDF -----------------------------------
+
+let _pdfText = '';
+let _extratoTxs = [];
+
+async function defHandlePdf(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const label = el('def-upload-label');
+  const text  = el('def-upload-text');
+  text.textContent = '⏳ Lendo PDF…';
+  label.classList.add('has-file');
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      fullText += content.items.map(s => s.str).join(' ') + '\n';
+    }
+    _pdfText = fullText;
+    text.textContent = `✅ ${file.name} (${pdf.numPages} páginas)`;
+    el('def-analisar-btn').disabled = false;
+  } catch (err) {
+    text.textContent = '❌ Erro ao ler PDF. Tente outro arquivo.';
+    label.classList.remove('has-file');
+    console.error(err);
+  }
+}
+
+async function defAnalisarExtrato() {
+  const key = _getGeminiKey();
+  if (!key) {
+    toast('Salve sua chave do Gemini nas Definições primeiro.');
+    return;
+  }
+  if (!_pdfText) { toast('Selecione um PDF primeiro.'); return; }
+
+  const btn = el('def-analisar-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analisando com IA…';
+
+  const catNames = S.cats.map(c => `${c.nome} (${c.tipo})`).join(', ');
+
+  const prompt = `Você é um assistente financeiro. Analise o texto abaixo de um extrato bancário e extraia TODAS as transações.
+
+Para cada transação, retorne um JSON array com objetos no formato:
+{
+  "descricao": "nome da transação",
+  "valor": 123.45,
+  "tipo": "saida" ou "entrada",
+  "data": "YYYY-MM-DD",
+  "categoria": "categoria sugerida"
+}
+
+Categorias disponíveis: ${catNames}
+
+Regras:
+- Use exatamente o nome da categoria disponível mais adequada
+- "tipo" deve ser "entrada" para recebimentos/depósitos e "saida" para pagamentos/compras
+- "valor" deve ser positivo sempre (número sem sinal)
+- "data" no formato YYYY-MM-DD
+- Se não souber a categoria exata, use "Outros (saída)" ou "Outros (entrada)"
+- Retorne APENAS o JSON array, sem texto extra
+
+Texto do extrato:
+${_pdfText.slice(0, 15000)}`;
+
+  try {
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1, responseMimeType: 'application/json' }
+        })
+      }
+    );
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      const msg = data?.error?.message || 'Erro na API do Gemini.';
+      throw new Error(msg);
+    }
+
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
+    _extratoTxs = JSON.parse(raw);
+
+    if (!_extratoTxs.length) {
+      toast('Nenhuma transação encontrada no extrato.');
+      btn.disabled = false;
+      btn.textContent = 'Analisar com IA';
+      return;
+    }
+
+    renderExtratoPreview();
+    switchTab('extrato', null);
+
+  } catch (err) {
+    toast('Erro: ' + err.message);
+    console.error(err);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Analisar com IA';
+}
+
+function renderExtratoPreview() {
+  const container = el('extrato-list');
+  if (!container) return;
+
+  const catSaidaOptions  = S.cats.filter(c => c.tipo === 'saida').map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join('');
+  const catEntOptions    = S.cats.filter(c => c.tipo === 'entrada').map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join('');
+
+  container.innerHTML = _extratoTxs.map((t, i) => {
+    const catOptions = t.tipo === 'entrada' ? catEntOptions : catSaidaOptions;
+    const valClass   = t.tipo === 'entrada' ? 'entrada' : 'saida';
+    const valSign    = t.tipo === 'entrada' ? '+' : '-';
+    return `
+      <div class="extrato-item">
+        <div class="extrato-row1">
+          <span class="extrato-desc">${esc(t.descricao)}</span>
+          <span class="extrato-valor ${valClass}">${valSign} ${fmt(t.valor)}</span>
+        </div>
+        <div class="extrato-row2">
+          <input type="date" class="tx-edit-input tx-edit-date" value="${t.data || ''}"
+            onchange="_extratoTxs[${i}].data = this.value" style="width:130px">
+          <select class="cat-inline-select" style="flex:1"
+            onchange="_extratoTxs[${i}].categoria = this.value">
+            ${catOptions.replace(`value="${esc(t.categoria)}"`, `value="${esc(t.categoria)}" selected`)}
+          </select>
+          <button class="def-cat-del" onclick="_extratoTxs.splice(${i},1); renderExtratoPreview()" title="Remover">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function importarExtrato() {
+  if (!_extratoTxs.length) { toast('Nenhuma transação para importar.'); return; }
+
+  const btn = el('btn-importar-extrato');
+  btn.disabled = true;
+  btn.textContent = '⏳ Importando…';
+
+  const rows = _extratoTxs.map(t => ({
+    user_id:   S.user.id,
+    descricao: t.descricao,
+    valor:     t.valor,
+    valor_brl: t.valor,
+    moeda:     'BRL',
+    tipo:      t.tipo,
+    categoria: t.categoria,
+    data:      t.data,
+    recorrente: false
+  }));
+
+  const { error } = await sb.from('transacoes').insert(rows);
+
+  btn.disabled = false;
+  btn.textContent = 'Importar tudo';
+
+  if (error) { toast('Erro ao importar: ' + error.message); return; }
+
+  toast(`✅ ${rows.length} transações importadas!`);
+  _extratoTxs = [];
+  _pdfText = '';
+  // Reset upload
+  const label = el('def-upload-label');
+  const text  = el('def-upload-text');
+  if (text) text.textContent = 'Clique para selecionar o PDF';
+  if (label) label.classList.remove('has-file');
+  const inp = el('def-pdf-input');
+  if (inp) inp.value = '';
+  const anBtn = el('def-analisar-btn');
+  if (anBtn) { anBtn.disabled = true; anBtn.textContent = 'Analisar com IA'; }
+
+  switchTab('dashboard', document.querySelector('[data-tab="dashboard"]'));
 }
 
 // --- Data helpers -------------------------------------------
