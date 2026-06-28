@@ -1179,10 +1179,7 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
   width: 40px; height: 40px; border-radius: 50%;
   border: 2px solid var(--primary);
   flex-shrink: 0;
-  background-image: url('mattperson.png');
-  background-size: 280%;
-  background-position: center 18%;
-  background-repeat: no-repeat;
+  background: url('mattperson.png') center 18% / 280% no-repeat !important;
 }
 .mattia-title { font-weight: 700; font-size: 1rem; color: var(--text); }
 .mattia-subtitle { font-size: 0.75rem; color: var(--muted); }
