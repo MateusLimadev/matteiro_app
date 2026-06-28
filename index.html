@@ -472,20 +472,20 @@
   </main>
 
   <!-- ── MATTIA FLOATING BUTTON ───────────────────────────── -->
-  <button class="mattia-fab" id="mattia-fab" onclick="mattiaToggle()" title="MattIA">
+  <button class="mattia-fab" id="mattia-fab" onclick="mattiaToggle()" title="Matt">
     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>
-    <span class="mattia-fab-label">MattIA</span>
+    <span class="mattia-fab-label">Matt</span>
   </button>
 
-  <!-- ── MATTIA PANEL ─────────────────────────────────────── -->
+  <!-- ── MATT PANEL ────────────────────────────────────────── -->
   <div class="mattia-overlay" id="mattia-overlay" onclick="mattiaToggle()"></div>
   <div class="mattia-panel" id="mattia-panel">
     <div class="mattia-header">
       <div class="mattia-header-info">
         <div class="mattia-avatar">M</div>
         <div>
-          <div class="mattia-title">MattIA</div>
-          <div class="mattia-subtitle">Assistente financeiro com IA</div>
+          <div class="mattia-title">Matt</div>
+          <div class="mattia-subtitle">Seu assistente financeiro</div>
         </div>
       </div>
       <button class="mattia-close" onclick="mattiaToggle()">✕</button>
@@ -493,8 +493,7 @@
 
     <div class="mattia-messages" id="mattia-messages">
       <div class="mattia-msg mattia-msg--ai">
-        <p>Olá! Sou o MattIA 👋</p>
-        <p>Posso te ajudar a analisar seus gastos, responder perguntas sobre suas finanças ou importar um extrato bancário em PDF.</p>
+        Oi! 👋 Pode perguntar sobre seus gastos ou mandar um extrato em PDF.
       </div>
     </div>
 
@@ -502,13 +501,15 @@
     <div class="mattia-quick-actions" id="mattia-quick">
       <button class="mattia-quick-btn" onclick="mattiaAcao('resumo')">📊 Resumo do mês</button>
       <button class="mattia-quick-btn" onclick="mattiaAcao('maiores')">💸 Maiores gastos</button>
-      <button class="mattia-quick-btn" onclick="mattiaUploadClick()">📄 Importar extrato PDF</button>
     </div>
 
     <!-- Input -->
     <div class="mattia-input-row">
       <input type="file" id="mattia-pdf-input" accept=".pdf" style="display:none" onchange="mattiaHandlePdf(this)">
-      <input class="mattia-input" id="mattia-input" type="text" placeholder="Pergunte algo sobre suas finanças…" onkeydown="if(event.key==='Enter')mattiaEnviar()">
+      <button class="mattia-attach-btn" onclick="mattiaUploadClick()" title="Enviar extrato PDF">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+      </button>
+      <input class="mattia-input" id="mattia-input" type="text" placeholder="Pergunte algo…" onkeydown="if(event.key==='Enter')mattiaEnviar()">
       <button class="mattia-send-btn" onclick="mattiaEnviar()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
