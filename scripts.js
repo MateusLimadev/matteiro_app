@@ -10,7 +10,7 @@ const SUPABASE_KEY = 'sb_publishable_kdor7kz8Mj0LeLz-EhJ80g_QzQy9FR8';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- Gemini API key (carregada do Supabase após login) ------
-let GEMINI_KEY = '';
+let GROQ_KEY = '';
 
 // --- State --------------------------------------------------
 const S = {
@@ -1110,12 +1110,12 @@ async function _loadAppConfig() {
   const { data } = await sb.from('app_config').select('key, value');
   if (!data) return;
   data.forEach(row => {
-    if (row.key === 'gemini_key') GEMINI_KEY = row.value;
+    if (row.key === 'groq_key') GROQ_KEY = row.value;
   });
 }
 
-function _getGeminiKey() {
-  return GEMINI_KEY;
+function _getGroqKey() {
+  return GROQ_KEY;
 }
 
 // --- Importar extrato PDF -----------------------------------
@@ -1152,9 +1152,9 @@ async function defHandlePdf(input) {
 }
 
 async function defAnalisarExtrato() {
-  const key = _getGeminiKey();
+  const key = _getGroqKey();
   if (!key) {
-    toast('Salve sua chave do Gemini nas Definições primeiro.');
+    toast('Chave do Groq não configurada. Contacte o suporte.');
     return;
   }
   if (!_pdfText) { toast('Selecione um PDF primeiro.'); return; }
@@ -1184,20 +1184,25 @@ Regras:
 - "valor" deve ser positivo sempre (número sem sinal)
 - "data" no formato YYYY-MM-DD
 - Se não souber a categoria exata, use "Outros (saída)" ou "Outros (entrada)"
-- Retorne APENAS o JSON array, sem texto extra
+- Retorne APENAS o JSON array, sem texto extra, sem markdown
 
 Texto do extrato:
 ${_pdfText.slice(0, 15000)}`;
 
   try {
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      'https://api.groq.com/openai/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, responseMimeType: 'application/json' }
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.1,
+          response_format: { type: 'json_object' }
         })
       }
     );
@@ -1205,12 +1210,14 @@ ${_pdfText.slice(0, 15000)}`;
     const data = await resp.json();
 
     if (!resp.ok) {
-      const msg = data?.error?.message || 'Erro na API do Gemini.';
+      const msg = data?.error?.message || 'Erro na API do Groq.';
       throw new Error(msg);
     }
 
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-    _extratoTxs = JSON.parse(raw);
+    const raw = data.choices?.[0]?.message?.content || '{}';
+    const parsed = JSON.parse(raw);
+    // Groq com json_object retorna { "transacoes": [...] } ou direto array
+    _extratoTxs = Array.isArray(parsed) ? parsed : (parsed.transacoes || parsed.transactions || Object.values(parsed)[0] || []);
 
     if (!_extratoTxs.length) {
       toast('Nenhuma transação encontrada no extrato.');
