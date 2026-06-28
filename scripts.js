@@ -1550,8 +1550,9 @@ async function planSalvar() {
   if (!dataFim) { toast('Escolha uma data limite.'); return; }
 
   const { error } = await sb.from('planejamentos').insert({
+    user_id:     S.user.id,
     titulo,
-    valor_meta: valor,
+    valor_meta:  valor,
     data_inicio: new Date().toISOString().slice(0, 10),
     data_fim:    dataFim,
     ativo:       true
