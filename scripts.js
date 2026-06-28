@@ -1709,34 +1709,39 @@ async function _mattiaChat(userMsg) {
     }
   });
 
+  // Mês corrente para destacar no contexto
+  const curKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
+  const curData = porMes[curKey] || { entradas: 0, saidas: 0, cats: {} };
+  const curSaldo = curData.entradas - curData.saidas;
+  const curMesNome = now.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
   const resumoMeses = Object.entries(porMes).sort().map(([k, v]) => {
     const [y, m] = k.split('-');
     const nome = new Date(+y, +m-1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    const isCur = k === curKey ? ' ← MÊS ATUAL' : '';
     const topCats = Object.entries(v.cats)
       .sort((a,b) => b[1]-a[1]).slice(0,5)
       .map(([c,val]) => `${c}: R$${val.toFixed(2)}`).join(', ');
-    return `${nome}:
-  Receitas: R$${v.entradas.toFixed(2)} | Despesas: R$${v.saidas.toFixed(2)} | Saldo: R$${(v.entradas-v.saidas).toFixed(2)}
-  Maiores categorias de gasto: ${topCats || 'nenhuma'}`;
+    return `${nome}${isCur}:
+  Receitas: R$${v.entradas.toFixed(2)} | Despesas: R$${v.saidas.toFixed(2)} | Saldo do mês: R$${(v.entradas-v.saidas).toFixed(2)}
+  Categorias de gasto: ${topCats || 'nenhuma'}`;
   }).join('\n\n');
 
   const todayStr = now.toLocaleDateString('pt-BR');
 
   const systemMsg = `Você é o Matt, assistente financeiro do app Matteiro. Personalidade: direto, descontraído, fala como um amigo que entende de dinheiro. Sem enrolação, sem formalidade.
 
-IMPORTANTE: todos os valores e totais já foram calculados e estão corretos abaixo. Nunca tente recalcular ou somar valores — use os números exatos fornecidos.
-
-Regras:
-- Respostas curtas (máximo 2 parágrafos ou uma lista de no máximo 5 itens)
-- Use R$ nos valores, não escreva "reais"
-- Zero textão. Se der pra dizer em 2 frases, diga em 2 frases
-- Emoji só quando fizer sentido real, não em todo final de frase
-- Português BR informal
-- O usuário pode ter transações com datas futuras (planejadas). Trate normalmente.
+REGRAS CRÍTICAS:
+- NUNCA some ou recalcule valores — use EXATAMENTE os números fornecidos abaixo
+- "Saldo do mês" = receitas menos despesas DAQUELE mês específico. Não some saldos de meses diferentes
+- Quando o usuário perguntar sobre saldo atual, use SOMENTE o saldo do mês atual: R$${curSaldo.toFixed(2)} (${curMesNome})
+- Respostas curtas: máximo 2 parágrafos ou lista de 5 itens
+- Português BR informal, sem enrolação
 
 Hoje: ${todayStr}
+Saldo do mês atual (${curMesNome}): R$${curSaldo.toFixed(2)} | Receitas: R$${curData.entradas.toFixed(2)} | Despesas: R$${curData.saidas.toFixed(2)}
 
-Resumo financeiro pré-calculado (use esses números, não recalcule):
+Histórico por mês (cada saldo é INDEPENDENTE, não acumule):
 ${resumoMeses || 'Sem dados ainda.'}
 
 ${_plans.length ? `Planos ativos:
