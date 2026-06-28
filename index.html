@@ -175,6 +175,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Relatório
       </button>
+      <button class="sb-item" onclick="switchTab('planejamento', this)" data-tab="planejamento">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Planejamento
+      </button>
       <button class="sb-item" onclick="switchTab('definicoes', this)" data-tab="definicoes">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Definições
@@ -413,6 +417,51 @@
       </div>
     </section>
 
+    <!-- ── PLANEJAMENTO ──────────────────────────────── -->
+    <section id="tab-planejamento" class="tab-screen" style="padding-top:72px">
+      <div class="screen-header">
+        <span class="screen-title">Planejamento</span>
+        <button class="btn-add" onclick="planNovo()">+ Novo plano</button>
+      </div>
+      <div class="content-area">
+        <div id="plan-list"></div>
+        <div id="plan-empty" class="plan-empty hidden">
+          <div class="plan-empty-icon">🎯</div>
+          <p class="plan-empty-title">Nenhum plano ainda</p>
+          <p class="plan-empty-sub">Crie seu primeiro plano financeiro com a ajuda do Matt.</p>
+          <button class="btn-primary" style="margin-top:1rem" onclick="planNovo()">Criar plano com Matt</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MODAL NOVO PLANO ───────────────────────────── -->
+    <div class="modal-overlay hidden" id="plan-modal-overlay" onclick="planModalClose()"></div>
+    <div class="modal-card hidden" id="plan-modal">
+      <div class="modal-header">
+        <span class="modal-title">Novo plano financeiro</span>
+        <button class="mattia-close" onclick="planModalClose()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="field-label">Objetivo</label>
+        <input id="plan-titulo" class="field-input" type="text" placeholder="Ex: Reserva de emergência, Viagem, Carro…" maxlength="60">
+
+        <label class="field-label" style="margin-top:1rem">Quanto você quer guardar? (R$)</label>
+        <input id="plan-valor" class="field-input" type="number" min="1" placeholder="5000">
+
+        <label class="field-label" style="margin-top:1rem">Data limite</label>
+        <input id="plan-data" class="field-input" type="date">
+
+        <label class="field-label" style="margin-top:1rem">Renda mensal estimada (R$)</label>
+        <input id="plan-renda" class="field-input" type="number" min="1" placeholder="3000">
+
+        <div id="plan-matt-tip" class="plan-matt-tip hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="tx-edit-cancel" onclick="planModalClose()">Cancelar</button>
+        <button class="btn-primary" onclick="planSalvar()">Salvar plano</button>
+      </div>
+    </div>
+
     <!-- ── DEFINIÇÕES ─────────────────────────────────── -->
     <section id="tab-definicoes" class="tab-screen" style="padding-top:72px">
       <div class="screen-header">
@@ -501,6 +550,7 @@
     <div class="mattia-quick-actions" id="mattia-quick">
       <button class="mattia-quick-btn" onclick="mattiaAcao('resumo')">📊 Resumo do mês</button>
       <button class="mattia-quick-btn" onclick="mattiaAcao('maiores')">💸 Maiores gastos</button>
+      <button class="mattia-quick-btn" onclick="mattiaAcao('plano')">🎯 Ver meus planos</button>
     </div>
 
     <!-- Input -->
@@ -533,6 +583,10 @@
     <button class="nav-item" onclick="switchTab('relatorio', this)" data-tab="relatorio">
       <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
       <span class="nav-label">Relatório</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('planejamento', this)" data-tab="planejamento">
+      <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <span class="nav-label">Planos</span>
     </button>
     <button class="nav-item" onclick="switchTab('definicoes', this)" data-tab="definicoes">
       <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>

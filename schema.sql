@@ -86,8 +86,24 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
+-- Planejamentos financeiros
+CREATE TABLE IF NOT EXISTS planejamentos (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  titulo      TEXT NOT NULL,
+  valor_meta  NUMERIC(12,2) NOT NULL,
+  data_inicio DATE NOT NULL,
+  data_fim    DATE NOT NULL,
+  ativo       BOOLEAN DEFAULT true,
+  criado_em   TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE planejamentos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "planejamentos: own data" ON planejamentos FOR ALL USING (auth.uid() = user_id);
+
 -- ── ÍNDICES (performance) ────────────────────────────────────
 
-CREATE INDEX IF NOT EXISTS idx_transacoes_user_data  ON transacoes  (user_id, data);
-CREATE INDEX IF NOT EXISTS idx_categorias_user        ON categorias  (user_id);
-CREATE INDEX IF NOT EXISTS idx_recorrentes_user_ativo ON recorrentes (user_id, ativo);
+CREATE INDEX IF NOT EXISTS idx_transacoes_user_data  ON transacoes    (user_id, data);
+CREATE INDEX IF NOT EXISTS idx_categorias_user        ON categorias    (user_id);
+CREATE INDEX IF NOT EXISTS idx_recorrentes_user_ativo ON recorrentes  (user_id, ativo);
+CREATE INDEX IF NOT EXISTS idx_planejamentos_user     ON planejamentos (user_id, ativo);

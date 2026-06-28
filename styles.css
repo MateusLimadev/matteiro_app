@@ -1283,6 +1283,89 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
+   PLANEJAMENTO
+   ============================================================ */
+
+/* Plan card */
+.plan-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1rem 1.125rem;
+  margin-bottom: 0.875rem;
+}
+.plan-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 0.75rem; }
+.plan-card-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+.plan-card-prazo { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+.plan-card-del {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1rem; padding: 2px 6px; border-radius: 6px; flex-shrink: 0;
+}
+.plan-card-del:hover { color: var(--red-dim); background: var(--faint); }
+
+/* Progress bar */
+.plan-progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; }
+.plan-progress-bar-wrap { flex: 1; height: 8px; background: var(--inset); border-radius: 999px; overflow: hidden; }
+.plan-progress-bar { height: 100%; border-radius: 999px; background: var(--primary); transition: width 0.4s; }
+.plan-progress-bar.warn { background: #f59e0b; }
+.plan-progress-bar.danger { background: var(--red-dim); }
+.plan-progress-pct { font-size: 0.8rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+/* Stats row */
+.plan-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 0.75rem; }
+.plan-stat { flex: 1; min-width: 80px; }
+.plan-stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.plan-stat-value { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-top: 1px; }
+
+/* Alert badge */
+.plan-alert {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 10px; padding: 8px 12px; margin-top: 0.75rem;
+  font-size: 0.8rem; color: #f87171;
+}
+.plan-alert.warn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+
+/* Matt tip in modal */
+.plan-matt-tip {
+  background: var(--inset); border-left: 3px solid var(--primary);
+  border-radius: 0 10px 10px 0; padding: 10px 14px;
+  font-size: 0.85rem; color: var(--text); margin-top: 1rem; line-height: 1.5;
+}
+
+/* Empty state */
+.plan-empty { text-align: center; padding: 3rem 1rem; }
+.plan-empty-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+.plan-empty-title { font-weight: 700; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
+.plan-empty-sub { font-size: 0.875rem; color: var(--muted); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 800;
+}
+.modal-card {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 810;
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding: 0; max-height: 90vh; overflow-y: auto;
+}
+@media (min-width: 600px) {
+  .modal-card {
+    top: 50%; left: 50%; right: auto; bottom: auto;
+    transform: translate(-50%, -50%);
+    width: min(480px, 92vw); border-radius: 20px; max-height: 85vh;
+  }
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+.modal-body { padding: 1.25rem; }
+.modal-footer {
+  display: flex; gap: 8px; padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.modal-footer .btn-primary { flex: 1; }
+
+/* ============================================================
    EMPTY STATE
    ============================================================ */
 

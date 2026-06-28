@@ -155,6 +155,7 @@ function showApp() {
   if (sbAvatar) sbAvatar.textContent = (S.user.nome || nome).split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase().slice(0,2);
   updateMonthLabel();
   loadCategories(() => loadDashboard());
+  loadPlanejamento();
   _applyTheme(localStorage.getItem('matteiro-theme') || 'dark');
   _loadAppConfig();
 }
@@ -353,6 +354,7 @@ function switchTab(name, btn) {
   if (name === 'nova')        prepareNovaForm();
   if (name === 'recorrentes') loadRecorrentes();
   if (name === 'relatorio')   loadRelatorio();
+  if (name === 'planejamento') loadPlanejamento();
   if (name === 'definicoes')  renderDefLists();
 }
 
@@ -639,6 +641,8 @@ async function handleAddTransaction(e) {
   toast('Transação salva! ✓');
   el('form-nova').reset();
   prepareNovaForm();
+  // Verifica impacto nos planos após salvar saída
+  if (tipo === 'saida' && _plans.length) setTimeout(_checkPlanAlerts, 500);
 }
 
 // --- Recorrentes --------------------------------------------
@@ -1396,6 +1400,205 @@ function togglePwd(id) {
   inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
+// --- Planejamento -------------------------------------------
+
+let _plans = [];
+
+async function loadPlanejamento() {
+  const { data, error } = await sb.from('planejamentos')
+    .select('*').eq('ativo', true).order('criado_em', { ascending: true });
+  if (error) { console.error(error); return; }
+  _plans = data || [];
+  renderPlanejamento();
+}
+
+async function renderPlanejamento() {
+  const list    = el('plan-list');
+  const empty   = el('plan-empty');
+  if (!list) return;
+
+  if (!_plans.length) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  // Buscar saldo acumulado desde o início de cada plano
+  const hoje = new Date();
+  const cards = await Promise.all(_plans.map(async p => {
+    const { data: txs } = await sb.from('transacoes')
+      .select('tipo, valor_brl')
+      .gte('data', p.data_inicio)
+      .lte('data', hoje.toISOString().slice(0, 10));
+
+    const entradas = (txs||[]).filter(t => t.tipo === 'entrada').reduce((a,t)=>a+(t.valor_brl||0),0);
+    const saidas   = (txs||[]).filter(t => t.tipo === 'saida').reduce((a,t)=>a+(t.valor_brl||0),0);
+    const saldoReal = entradas - saidas;
+
+    const dataFim   = new Date(p.data_fim);
+    const dataIni   = new Date(p.data_inicio);
+    const mesesTotal = Math.max(1, Math.round((dataFim - dataIni) / (1000*60*60*24*30)));
+    const mesesRest  = Math.max(0, Math.round((dataFim - hoje) / (1000*60*60*24*30)));
+    const metaMensal = p.valor_meta / mesesTotal;
+
+    const progresso  = Math.min(100, Math.max(0, (saldoReal / p.valor_meta) * 100));
+    const barClass   = progresso >= 66 ? '' : progresso >= 33 ? 'warn' : 'danger';
+
+    const prazoStr   = dataFim.toLocaleDateString('pt-BR', { month:'short', year:'numeric' });
+
+    // Alerta: se falta pouco tempo e progresso baixo
+    let alertHtml = '';
+    if (mesesRest <= 1 && progresso < 80) {
+      alertHtml = `<div class="plan-alert">⚠️ Menos de 1 mês restante e você está em ${progresso.toFixed(0)}%. Reduza gastos agora.</div>`;
+    } else if (saldoReal < 0) {
+      alertHtml = `<div class="plan-alert">🚨 Saldo negativo no período. Esse plano está em risco.</div>`;
+    } else if (progresso < 30 && mesesRest < mesesTotal * 0.5) {
+      alertHtml = `<div class="plan-alert warn">⚡ Você está na metade do prazo mas com só ${progresso.toFixed(0)}% concluído.</div>`;
+    }
+
+    return `
+      <div class="plan-card">
+        <div class="plan-card-header">
+          <div>
+            <div class="plan-card-title">${esc(p.titulo)}</div>
+            <div class="plan-card-prazo">Prazo: ${prazoStr} · ${mesesRest} ${mesesRest===1?'mês':'meses'} restante${mesesRest===1?'':'s'}</div>
+          </div>
+          <button class="plan-card-del" onclick="planDeletar('${p.id}')" title="Remover">✕</button>
+        </div>
+        <div class="plan-progress-row">
+          <div class="plan-progress-bar-wrap">
+            <div class="plan-progress-bar ${barClass}" style="width:${progresso.toFixed(1)}%"></div>
+          </div>
+          <span class="plan-progress-pct">${progresso.toFixed(0)}%</span>
+        </div>
+        <div class="plan-stats">
+          <div class="plan-stat">
+            <div class="plan-stat-label">Meta</div>
+            <div class="plan-stat-value">${fmt(p.valor_meta)}</div>
+          </div>
+          <div class="plan-stat">
+            <div class="plan-stat-label">Guardado</div>
+            <div class="plan-stat-value" style="color:${saldoReal>=0?'var(--positive)':'var(--red-dim)'}">${fmt(Math.abs(saldoReal))}</div>
+          </div>
+          <div class="plan-stat">
+            <div class="plan-stat-label">Meta/mês</div>
+            <div class="plan-stat-value">${fmt(metaMensal)}</div>
+          </div>
+        </div>
+        ${alertHtml}
+      </div>`;
+  }));
+
+  list.innerHTML = cards.join('');
+}
+
+function planNovo() {
+  // Pré-preencher data limite com 3 meses
+  const d = new Date();
+  d.setMonth(d.getMonth() + 3);
+  el('plan-data').value = d.toISOString().slice(0,10);
+  el('plan-titulo').value = '';
+  el('plan-valor').value = '';
+  el('plan-renda').value = '';
+  el('plan-matt-tip').classList.add('hidden');
+  el('plan-modal').classList.remove('hidden');
+  el('plan-modal-overlay').classList.remove('hidden');
+
+  // Gerar dica do Matt após digitar
+  ['plan-valor','plan-data','plan-renda'].forEach(id => {
+    el(id).addEventListener('change', _planAtualizarDica, { once: false });
+  });
+}
+
+function planModalClose() {
+  el('plan-modal').classList.add('hidden');
+  el('plan-modal-overlay').classList.add('hidden');
+}
+
+async function _planAtualizarDica() {
+  const valor = parseFloat(el('plan-valor').value);
+  const renda = parseFloat(el('plan-renda').value);
+  const dataFim = el('plan-data').value;
+  if (!valor || !dataFim) return;
+
+  const hoje = new Date();
+  const fim  = new Date(dataFim);
+  const meses = Math.max(1, Math.round((fim - hoje) / (1000*60*60*24*30)));
+  const metaMensal = valor / meses;
+
+  const tip = el('plan-matt-tip');
+  tip.classList.remove('hidden');
+
+  if (renda && metaMensal > renda * 0.8) {
+    tip.innerHTML = `⚠️ Guardar <strong>${fmt(metaMensal)}/mês</strong> representa mais de 80% da sua renda — muito apertado. Considere aumentar o prazo ou reduzir a meta.`;
+  } else if (renda) {
+    const sobra = renda - metaMensal;
+    tip.innerHTML = `✅ Você vai precisar guardar <strong>${fmt(metaMensal)}/mês</strong>. Com renda de ${fmt(renda)}, vão sobrar ${fmt(sobra)} por mês para outras despesas.`;
+  } else {
+    tip.innerHTML = `📊 Você vai precisar guardar <strong>${fmt(metaMensal)}/mês</strong> por ${meses} ${meses===1?'mês':'meses'}.`;
+  }
+}
+
+async function planSalvar() {
+  const titulo  = el('plan-titulo').value.trim();
+  const valor   = parseFloat(el('plan-valor').value);
+  const dataFim = el('plan-data').value;
+
+  if (!titulo) { toast('Digite o objetivo do plano.'); return; }
+  if (!valor || valor <= 0) { toast('Digite o valor da meta.'); return; }
+  if (!dataFim) { toast('Escolha uma data limite.'); return; }
+
+  const { error } = await sb.from('planejamentos').insert({
+    titulo,
+    valor_meta: valor,
+    data_inicio: new Date().toISOString().slice(0, 10),
+    data_fim:    dataFim,
+    ativo:       true
+  });
+
+  if (error) { toast('Erro ao salvar plano.'); console.error(error); return; }
+
+  toast('✅ Plano criado!');
+  planModalClose();
+  loadPlanejamento();
+}
+
+async function planDeletar(id) {
+  if (!confirm('Remover este plano?')) return;
+  await sb.from('planejamentos').update({ ativo: false }).eq('id', id);
+  _plans = _plans.filter(p => p.id !== id);
+  renderPlanejamento();
+  toast('Plano removido.');
+}
+
+async function _checkPlanAlerts() {
+  if (!_plans.length) return;
+  const hoje = new Date();
+  for (const p of _plans) {
+    const dataFim  = new Date(p.data_fim);
+    const dataIni  = new Date(p.data_inicio);
+    const mesesTotal = Math.max(1, Math.round((dataFim - dataIni) / (1000*60*60*24*30)));
+    const mesesRest  = Math.max(0, Math.round((dataFim - hoje) / (1000*60*60*24*30)));
+
+    const { data: txs } = await sb.from('transacoes')
+      .select('tipo, valor_brl')
+      .gte('data', p.data_inicio)
+      .lte('data', hoje.toISOString().slice(0, 10));
+
+    const entradas = (txs||[]).filter(t=>t.tipo==='entrada').reduce((a,t)=>a+(t.valor_brl||0),0);
+    const saidas   = (txs||[]).filter(t=>t.tipo==='saida').reduce((a,t)=>a+(t.valor_brl||0),0);
+    const saldoReal  = entradas - saidas;
+    const progresso  = saldoReal / p.valor_meta;
+    const esperado   = 1 - (mesesRest / mesesTotal);
+
+    if (progresso < esperado - 0.15) {
+      toast(`⚠️ Atenção: o plano "${p.titulo}" está atrasado. Você tem ${(progresso*100).toFixed(0)}% mas deveria ter ${(esperado*100).toFixed(0)}%.`, 6000);
+      break; // Um alerta por vez
+    }
+  }
+}
+
 // --- MattIA -------------------------------------------------
 
 let _mattiaOpen = false;
@@ -1448,6 +1651,10 @@ async function mattiaAcao(tipo) {
     prompt = 'Me dê um resumo financeiro do meu mês atual com base nas minhas transações.';
   } else if (tipo === 'maiores') {
     prompt = 'Quais foram meus maiores gastos este mês? Liste os 5 maiores com valor e categoria.';
+  } else if (tipo === 'plano') {
+    mattiaToggle();
+    switchTab('planejamento', document.querySelector('[data-tab="planejamento"]'));
+    return;
   }
   _mattiaAddMsg(prompt, 'user');
   await _mattiaChat(prompt);
@@ -1492,6 +1699,13 @@ Regras:
 
 Dados de ${mesNome}/${S.year}:
 Receitas R$${totalEntradas.toFixed(2)} | Despesas R$${totalSaidas.toFixed(2)} | Saldo R$${saldo.toFixed(2)}
+
+${_plans.length ? `Planos financeiros ativos:
+${_plans.map(p => {
+  const fim = new Date(p.data_fim);
+  const mesesRest = Math.max(0, Math.round((fim - new Date()) / (1000*60*60*24*30)));
+  return `- ${p.titulo}: meta R$${p.valor_meta} até ${fim.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})} (${mesesRest} meses)`;
+}).join('\n')}` : ''}
 
 Transações:
 ${txResumo || 'Nenhuma ainda.'}`.trim();
