@@ -1125,17 +1125,16 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 .mattia-fab {
   position: fixed; bottom: 88px; right: 20px; z-index: 900;
   width: 60px; height: 60px; border-radius: 50%;
-  background: var(--surface); border: 2.5px solid var(--primary);
-  padding: 0; cursor: pointer; overflow: hidden;
+  border: 2.5px solid var(--primary);
+  padding: 0; cursor: pointer;
+  background-image: url('mattperson.png');
+  background-size: 280%;
+  background-position: center 18%;
+  background-repeat: no-repeat;
   box-shadow: 0 4px 20px rgba(34,197,94,0.45);
   transition: transform 0.15s, box-shadow 0.15s;
-  position: fixed;
 }
 .mattia-fab:hover { transform: scale(1.07); box-shadow: 0 6px 28px rgba(34,197,94,0.6); }
-.mattia-fab-avatar {
-  width: 200%; height: 200%;
-  position: absolute; top: -30%; left: -50%;
-}
 
 /* Overlay */
 .mattia-overlay {
@@ -1178,11 +1177,12 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 }
 .mattia-avatar-img {
   width: 40px; height: 40px; border-radius: 50%;
-  object-fit: cover; object-position: center 10%;
   border: 2px solid var(--primary);
   flex-shrink: 0;
-  transform: scale(1.6);
-  transform-origin: center 20%;
+  background-image: url('mattperson.png');
+  background-size: 280%;
+  background-position: center 18%;
+  background-repeat: no-repeat;
 }
 .mattia-title { font-weight: 700; font-size: 1rem; color: var(--text); }
 .mattia-subtitle { font-size: 0.75rem; color: var(--muted); }
