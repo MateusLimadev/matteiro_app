@@ -1128,8 +1128,8 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
   border: 2.5px solid var(--primary);
   padding: 0; cursor: pointer;
   background-image: url('mattperson.png');
-  background-size: 280%;
-  background-position: center 32%;
+  background-size: 260%;
+  background-position: center 26%;
   background-repeat: no-repeat;
   box-shadow: 0 4px 20px rgba(34,197,94,0.45);
   transition: transform 0.15s, box-shadow 0.15s;
@@ -1179,7 +1179,7 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
   width: 40px; height: 40px; border-radius: 50%;
   border: 2px solid var(--primary);
   flex-shrink: 0;
-  background: url('mattperson.png') center 32% / 280% no-repeat !important;
+  background: url('mattperson.png') center 26% / 260% no-repeat !important;
 }
 .mattia-title { font-weight: 700; font-size: 1rem; color: var(--text); }
 .mattia-subtitle { font-size: 0.75rem; color: var(--muted); }
