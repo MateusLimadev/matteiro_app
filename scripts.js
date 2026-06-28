@@ -1678,71 +1678,57 @@ async function _mattiaChat(userMsg) {
     return;
   }
 
-  // Contexto financeiro: últimos 4 meses + próximo mês (ignora mês selecionado no card)
+  // Usa os mesmos dados do card do dashboard — sem query separada
   const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  const rangeFrom = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-  const rangeTo   = new Date(now.getFullYear(), now.getMonth() + 2, 0); // fim do próximo mês
-  const from = `${rangeFrom.getFullYear()}-${pad(rangeFrom.getMonth()+1)}-01`;
-  const to   = `${rangeTo.getFullYear()}-${pad(rangeTo.getMonth()+1)}-${pad(rangeTo.getDate())}`;
+  const lista = _allTxs || [];
+  const mesNome = MONTHS[S.month - 1];
+  const anoVis  = S.year;
 
-  const { data: txs } = await sb.from('transacoes')
-    .select('data, tipo, valor_brl, categoria, descricao')
-    .gte('data', from)
-    .lte('data', to)
-    .order('data', { ascending: false })
-    .limit(100);
-
-  const lista = txs || [];
-
-  // Pré-calcula tudo em JS — o Matt NÃO faz contas, só interpreta
-  const porMes = {};
+  // Totais exatos (mesmos do card)
+  let totalEntradas = 0, totalSaidas = 0;
+  const cats = {};
   lista.forEach(t => {
-    const k = t.data.slice(0, 7);
-    if (!porMes[k]) porMes[k] = { entradas: 0, saidas: 0, cats: {} };
-    const v = t.valor_brl || 0;
-    if (t.tipo === 'entrada') porMes[k].entradas += v;
+    const v = parseFloat(t.valor_brl) || 0;
+    if (t.tipo === 'entrada') totalEntradas += v;
     else {
-      porMes[k].saidas += v;
-      const cat = t.categoria || 'Outros';
-      porMes[k].cats[cat] = (porMes[k].cats[cat] || 0) + v;
+      totalSaidas += v;
+      const c = t.categoria || 'Outros';
+      cats[c] = (cats[c] || 0) + v;
     }
   });
+  const saldo = totalEntradas - totalSaidas;
 
-  // Mês corrente para destacar no contexto
-  const curKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}`;
-  const curData = porMes[curKey] || { entradas: 0, saidas: 0, cats: {} };
-  const curSaldo = curData.entradas - curData.saidas;
-  const curMesNome = now.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-
-  const resumoMeses = Object.entries(porMes).sort().map(([k, v]) => {
-    const [y, m] = k.split('-');
-    const nome = new Date(+y, +m-1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-    const isCur = k === curKey ? ' ← MÊS ATUAL' : '';
-    const topCats = Object.entries(v.cats)
-      .sort((a,b) => b[1]-a[1]).slice(0,5)
-      .map(([c,val]) => `${c}: R$${val.toFixed(2)}`).join(', ');
-    return `${nome}${isCur}:
-  Receitas: R$${v.entradas.toFixed(2)} | Despesas: R$${v.saidas.toFixed(2)} | Saldo do mês: R$${(v.entradas-v.saidas).toFixed(2)}
-  Categorias de gasto: ${topCats || 'nenhuma'}`;
-  }).join('\n\n');
+  const topCats = Object.entries(cats)
+    .sort((a,b) => b[1]-a[1]).slice(0,6)
+    .map(([c,v]) => `${c}: R$${v.toFixed(2)}`).join('\n  ');
 
   const todayStr = now.toLocaleDateString('pt-BR');
 
   const systemMsg = `Você é o Matt, assistente financeiro do app Matteiro. Personalidade: direto, descontraído, fala como um amigo que entende de dinheiro. Sem enrolação, sem formalidade.
 
-REGRAS CRÍTICAS:
-- NUNCA some ou recalcule valores — use EXATAMENTE os números fornecidos abaixo
-- "Saldo do mês" = receitas menos despesas DAQUELE mês específico. Não some saldos de meses diferentes
-- Quando o usuário perguntar sobre saldo atual, use SOMENTE o saldo do mês atual: R$${curSaldo.toFixed(2)} (${curMesNome})
-- Respostas curtas: máximo 2 parágrafos ou lista de 5 itens
-- Português BR informal, sem enrolação
+REGRA CRÍTICA: use EXATAMENTE os números abaixo. Nunca recalcule nem invente valores.
 
 Hoje: ${todayStr}
-Saldo do mês atual (${curMesNome}): R$${curSaldo.toFixed(2)} | Receitas: R$${curData.entradas.toFixed(2)} | Despesas: R$${curData.saidas.toFixed(2)}
+Mês em foco: ${mesNome} ${anoVis}
 
-Histórico por mês (cada saldo é INDEPENDENTE, não acumule):
-${resumoMeses || 'Sem dados ainda.'}
+DADOS DO MÊS (exatos):
+- Receitas: R$${totalEntradas.toFixed(2)}
+- Despesas: R$${totalSaidas.toFixed(2)}
+- Saldo:    R$${saldo.toFixed(2)}
+
+Gastos por categoria:
+  ${topCats || 'nenhum dado'}
+
+${_plans.length ? `Planos ativos:\n${_plans.map(p => {
+  const fim = new Date(p.data_fim);
+  const mr = Math.max(0, Math.round((fim - now) / (1000*60*60*24*30)));
+  return `- ${p.titulo}: meta R$${p.valor_meta}, prazo ${fim.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})} (${mr} meses)`;
+}).join('\n')}` : ''}
+
+Regras de resposta:
+- Máximo 2 parágrafos ou lista de 5 itens
+- Português BR informal, sem enrolação
+- Emoji só quando fizer sentido
 
 ${_plans.length ? `Planos ativos:
 ${_plans.map(p => {
