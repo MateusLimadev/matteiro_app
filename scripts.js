@@ -1427,9 +1427,13 @@ async function renderPlanejamento() {
   // Buscar saldo acumulado desde o início de cada plano
   const hoje = new Date();
   const cards = await Promise.all(_plans.map(async p => {
+    // Usa o 1º dia do mês de início para não perder transações do mesmo mês
+    const iniDate = new Date(p.data_inicio);
+    const iniMes  = `${iniDate.getFullYear()}-${String(iniDate.getMonth()+1).padStart(2,'0')}-01`;
+
     const { data: txs } = await sb.from('transacoes')
       .select('tipo, valor_brl')
-      .gte('data', p.data_inicio)
+      .gte('data', iniMes)
       .lte('data', hoje.toISOString().slice(0, 10));
 
     const entradas = (txs||[]).filter(t => t.tipo === 'entrada').reduce((a,t)=>a+(t.valor_brl||0),0);
@@ -1582,9 +1586,12 @@ async function _checkPlanAlerts() {
     const mesesTotal = Math.max(1, Math.round((dataFim - dataIni) / (1000*60*60*24*30)));
     const mesesRest  = Math.max(0, Math.round((dataFim - hoje) / (1000*60*60*24*30)));
 
+    const iniDate2 = new Date(p.data_inicio);
+    const iniMes2  = `${iniDate2.getFullYear()}-${String(iniDate2.getMonth()+1).padStart(2,'0')}-01`;
+
     const { data: txs } = await sb.from('transacoes')
       .select('tipo, valor_brl')
-      .gte('data', p.data_inicio)
+      .gte('data', iniMes2)
       .lte('data', hoje.toISOString().slice(0, 10));
 
     const entradas = (txs||[]).filter(t=>t.tipo==='entrada').reduce((a,t)=>a+(t.valor_brl||0),0);
