@@ -1424,20 +1424,12 @@ async function renderPlanejamento() {
   }
   empty.classList.add('hidden');
 
-  // Buscar saldo acumulado desde o início de cada plano
+  // Usa _allTxs (dados já carregados do dashboard — mesmo mês, mesma conta)
   const hoje = new Date();
   const cards = await Promise.all(_plans.map(async p => {
-    // Usa o 1º dia do mês de início para não perder transações do mesmo mês
-    const iniDate = new Date(p.data_inicio);
-    const iniMes  = `${iniDate.getFullYear()}-${String(iniDate.getMonth()+1).padStart(2,'0')}-01`;
-
-    const { data: txs } = await sb.from('transacoes')
-      .select('tipo, valor_brl')
-      .gte('data', iniMes)
-      .lte('data', hoje.toISOString().slice(0, 10));
-
-    const entradas = (txs||[]).filter(t => t.tipo === 'entrada').reduce((a,t)=>a+(t.valor_brl||0),0);
-    const saidas   = (txs||[]).filter(t => t.tipo === 'saida').reduce((a,t)=>a+(t.valor_brl||0),0);
+    const lista = _allTxs || [];
+    const entradas = lista.filter(t => t.tipo === 'entrada').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
+    const saidas   = lista.filter(t => t.tipo === 'saida').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
     const saldoReal = entradas - saidas;
 
     const dataFim   = new Date(p.data_fim);
@@ -1586,16 +1578,9 @@ async function _checkPlanAlerts() {
     const mesesTotal = Math.max(1, Math.round((dataFim - dataIni) / (1000*60*60*24*30)));
     const mesesRest  = Math.max(0, Math.round((dataFim - hoje) / (1000*60*60*24*30)));
 
-    const iniDate2 = new Date(p.data_inicio);
-    const iniMes2  = `${iniDate2.getFullYear()}-${String(iniDate2.getMonth()+1).padStart(2,'0')}-01`;
-
-    const { data: txs } = await sb.from('transacoes')
-      .select('tipo, valor_brl')
-      .gte('data', iniMes2)
-      .lte('data', hoje.toISOString().slice(0, 10));
-
-    const entradas = (txs||[]).filter(t=>t.tipo==='entrada').reduce((a,t)=>a+(t.valor_brl||0),0);
-    const saidas   = (txs||[]).filter(t=>t.tipo==='saida').reduce((a,t)=>a+(t.valor_brl||0),0);
+    const lista2   = _allTxs || [];
+    const entradas = lista2.filter(t=>t.tipo==='entrada').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
+    const saidas   = lista2.filter(t=>t.tipo==='saida').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
     const saldoReal  = entradas - saidas;
     const progresso  = saldoReal / p.valor_meta;
     const esperado   = 1 - (mesesRest / mesesTotal);
