@@ -1664,6 +1664,20 @@ async function _mattiaChat(userMsg) {
   const key = _getGroqKey();
   if (!key) { _mattiaAddMsg('Chave de IA não configurada. Contacte o suporte.', 'ai'); return; }
 
+  // Detectar intenção de criar plano — age diretamente
+  const msgLow = userMsg.toLowerCase();
+  const planIntent = ['crie o plano','criar plano','cria o plano','cria um plano','criar um plano',
+    'novo plano','abrir planejamento','aba planejamento','planejamento e crie','cria na aba'];
+  if (planIntent.some(k => msgLow.includes(k))) {
+    _mattiaAddMsg('Abrindo o planejamento agora! 🎯', 'ai');
+    setTimeout(() => {
+      mattiaToggle();
+      switchTab('planejamento', document.querySelector('[data-tab="planejamento"]'));
+      setTimeout(planNovo, 350);
+    }, 500);
+    return;
+  }
+
   // Contexto financeiro: últimos 4 meses + próximo mês (ignora mês selecionado no card)
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
