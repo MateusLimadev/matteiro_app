@@ -1379,7 +1379,18 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
   display: block;
   width: 100%;
   box-sizing: border-box;
+  background: var(--inset);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: 0.9375rem;
+  padding: 0.65rem 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
 }
+.modal-body .field-input:focus { border-color: var(--primary); }
+.modal-body .field-input::placeholder { color: var(--dim); }
 .modal-footer {
   display: flex; gap: 8px; padding: 1rem 1.25rem;
   border-top: 1px solid var(--border);
