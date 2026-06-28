@@ -1664,14 +1664,12 @@ async function _mattiaChat(userMsg) {
   const key = _getGroqKey();
   if (!key) { _mattiaAddMsg('Chave de IA não configurada. Contacte o suporte.', 'ai'); return; }
 
-  // Montar contexto financeiro — sempre usa o mês atual do calendário
+  // Montar contexto financeiro — usa o mês visível no dashboard (S.month/S.year)
   const now = new Date();
-  const curMonth = now.getMonth() + 1;
-  const curYear  = now.getFullYear();
   const pad = n => String(n).padStart(2, '0');
-  const from = `${curYear}-${pad(curMonth)}-01`;
-  const lastDay = new Date(curYear, curMonth, 0).getDate();
-  const to = `${curYear}-${pad(curMonth)}-${pad(lastDay)}`;
+  const from = `${S.year}-${pad(S.month)}-01`;
+  const lastDay = new Date(S.year, S.month, 0).getDate();
+  const to = `${S.year}-${pad(S.month)}-${pad(lastDay)}`;
 
   const { data: txs } = await sb.from('transacoes')
     .select('data, tipo, valor_brl, categoria, descricao')
@@ -1689,7 +1687,10 @@ async function _mattiaChat(userMsg) {
     `${t.data} | ${t.tipo} | R$${(t.valor_brl||0).toFixed(2)} | ${t.categoria} | ${t.descricao}`
   ).join('\n');
 
-  const mesNome = now.toLocaleString('pt-BR', { month: 'long' });
+  const mesNome = new Date(S.year, S.month - 1).toLocaleString('pt-BR', { month: 'long' });
+  const curYear = S.year;
+
+  const todayStr = now.toLocaleDateString('pt-BR');
 
   const systemMsg = `Você é o Matt, assistente financeiro do app Matteiro. Personalidade: direto, descontraído, fala como um amigo que entende de dinheiro. Sem enrolação, sem formalidade.
 
@@ -1699,8 +1700,10 @@ Regras:
 - Zero textão. Se der pra dizer em 2 frases, diga em 2 frases
 - Emoji só quando fizer sentido real, não em todo final de frase
 - Português BR informal
+- O usuário pode ter transações com datas futuras (planejadas). Trate normalmente.
 
-Dados de ${mesNome}/${curYear}:
+Hoje: ${todayStr}
+Dados exibidos: ${mesNome}/${curYear}:
 Receitas R$${totalEntradas.toFixed(2)} | Despesas R$${totalSaidas.toFixed(2)} | Saldo R$${saldo.toFixed(2)}
 
 ${_plans.length ? `Planos financeiros ativos:
