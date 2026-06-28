@@ -1664,31 +1664,43 @@ async function _mattiaChat(userMsg) {
   const key = _getGroqKey();
   if (!key) { _mattiaAddMsg('Chave de IA não configurada. Contacte o suporte.', 'ai'); return; }
 
-  // Montar contexto financeiro — usa o mês visível no dashboard (S.month/S.year)
+  // Contexto financeiro: últimos 4 meses + próximo mês (ignora mês selecionado no card)
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
-  const from = `${S.year}-${pad(S.month)}-01`;
-  const lastDay = new Date(S.year, S.month, 0).getDate();
-  const to = `${S.year}-${pad(S.month)}-${pad(lastDay)}`;
+  const rangeFrom = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  const rangeTo   = new Date(now.getFullYear(), now.getMonth() + 2, 0); // fim do próximo mês
+  const from = `${rangeFrom.getFullYear()}-${pad(rangeFrom.getMonth()+1)}-01`;
+  const to   = `${rangeTo.getFullYear()}-${pad(rangeTo.getMonth()+1)}-${pad(rangeTo.getDate())}`;
 
   const { data: txs } = await sb.from('transacoes')
     .select('data, tipo, valor_brl, categoria, descricao')
     .gte('data', from)
     .lte('data', to)
     .order('data', { ascending: false })
-    .limit(50);
+    .limit(100);
 
   const lista = txs || [];
-  const totalEntradas = lista.filter(t => t.tipo === 'entrada').reduce((a, t) => a + (t.valor_brl || 0), 0);
-  const totalSaidas   = lista.filter(t => t.tipo === 'saida').reduce((a, t) => a + (t.valor_brl || 0), 0);
-  const saldo = totalEntradas - totalSaidas;
 
-  const txResumo = lista.slice(0, 40).map(t =>
+  // Agrupa por mês para resumo
+  const porMes = {};
+  lista.forEach(t => {
+    const k = t.data.slice(0, 7); // "YYYY-MM"
+    if (!porMes[k]) porMes[k] = { entradas: 0, saidas: 0 };
+    if (t.tipo === 'entrada') porMes[k].entradas += t.valor_brl || 0;
+    else porMes[k].saidas += t.valor_brl || 0;
+  });
+  const resumoMeses = Object.entries(porMes).sort().map(([k, v]) => {
+    const [y, m] = k.split('-');
+    const nome = new Date(+y, +m-1).toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+    return `${nome}: receitas R$${v.entradas.toFixed(2)}, despesas R$${v.saidas.toFixed(2)}, saldo R$${(v.entradas-v.saidas).toFixed(2)}`;
+  }).join('\n');
+
+  const txResumo = lista.slice(0, 60).map(t =>
     `${t.data} | ${t.tipo} | R$${(t.valor_brl||0).toFixed(2)} | ${t.categoria} | ${t.descricao}`
   ).join('\n');
 
-  const mesNome = new Date(S.year, S.month - 1).toLocaleString('pt-BR', { month: 'long' });
-  const curYear = S.year;
+  const curYear = now.getFullYear();
+  const mesNome = now.toLocaleString('pt-BR', { month: 'long' });
 
   const todayStr = now.toLocaleDateString('pt-BR');
 
@@ -1703,18 +1715,19 @@ Regras:
 - O usuário pode ter transações com datas futuras (planejadas). Trate normalmente.
 
 Hoje: ${todayStr}
-Dados exibidos: ${mesNome}/${curYear}:
-Receitas R$${totalEntradas.toFixed(2)} | Despesas R$${totalSaidas.toFixed(2)} | Saldo R$${saldo.toFixed(2)}
+
+Resumo por mês (últimos meses + planejado):
+${resumoMeses || 'Sem dados.'}
 
 ${_plans.length ? `Planos financeiros ativos:
 ${_plans.map(p => {
   const fim = new Date(p.data_fim);
-  const mesesRest = Math.max(0, Math.round((fim - new Date()) / (1000*60*60*24*30)));
+  const mesesRest = Math.max(0, Math.round((fim - now) / (1000*60*60*24*30)));
   return `- ${p.titulo}: meta R$${p.valor_meta} até ${fim.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})} (${mesesRest} meses)`;
 }).join('\n')}` : ''}
 
-Transações:
-${txResumo || 'Nenhuma ainda.'}`.trim();
+Transações recentes e futuras:
+${txResumo || 'Nenhuma.'}`.trim();
 
   const loading = _mattiaLoading();
 
