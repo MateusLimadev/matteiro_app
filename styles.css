@@ -582,9 +582,10 @@ body {
 /* Edit button on tx rows */
 .tx-edit-btn {
   background: none; border: none; color: var(--dim);
-  font-size: 0.9rem; cursor: pointer; padding: 2px 5px;
+  font-size: 0.9rem; cursor: pointer; padding: 8px;
   border-radius: var(--r-xs); transition: color 0.15s;
-  line-height: 1;
+  line-height: 1; min-width: 36px; min-height: 36px;
+  display: flex; align-items: center; justify-content: center;
 }
 .tx-edit-btn:hover { color: var(--primary-lt); }
 
@@ -683,11 +684,12 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 
 .tx-del {
   background: none; border: none; color: var(--dim);
-  cursor: pointer; padding: 0; line-height: 1;
-  display: flex; align-items: center;
+  cursor: pointer; padding: 8px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 36px; min-height: 36px;
   transition: color 0.15s;
 }
-.tx-del svg { width: 13px; height: 13px; }
+.tx-del svg { width: 15px; height: 15px; }
 .tx-del:hover { color: var(--red); }
 
 /* Mobile theme toggle */
