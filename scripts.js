@@ -1151,17 +1151,17 @@ async function defHandlePdf(input) {
   }
 }
 
-async function defAnalisarExtrato() {
+async function defAnalisarExtrato(fromMattia = false) {
   const key = _getGroqKey();
   if (!key) {
-    toast('Chave do Groq não configurada. Contacte o suporte.');
+    if (fromMattia) _mattiaAddMsg('Chave de IA não configurada.', 'ai');
+    else toast('Chave do Groq não configurada. Contacte o suporte.');
     return;
   }
   if (!_pdfText) { toast('Selecione um PDF primeiro.'); return; }
 
   const btn = el('def-analisar-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Analisando com IA…';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Analisando com IA…'; }
 
   const catNames = S.cats.map(c => `${c.nome} (${c.tipo})`).join(', ');
 
@@ -1220,22 +1220,27 @@ ${_pdfText.slice(0, 15000)}`;
     _extratoTxs = Array.isArray(parsed) ? parsed : (parsed.transacoes || parsed.transactions || Object.values(parsed)[0] || []);
 
     if (!_extratoTxs.length) {
-      toast('Nenhuma transação encontrada no extrato.');
-      btn.disabled = false;
-      btn.textContent = 'Analisar com IA';
+      if (fromMattia) _mattiaAddMsg('Nenhuma transação encontrada no extrato.', 'ai');
+      else toast('Nenhuma transação encontrada no extrato.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Analisar com IA'; }
       return;
     }
 
     renderExtratoPreview();
-    switchTab('extrato', null);
+    if (fromMattia) {
+      mattiaToggle(); // fecha o painel
+      setTimeout(() => switchTab('extrato', null), 300);
+    } else {
+      switchTab('extrato', null);
+    }
 
   } catch (err) {
-    toast('Erro: ' + err.message);
+    if (fromMattia) _mattiaAddMsg('Erro ao analisar: ' + err.message, 'ai');
+    else toast('Erro: ' + err.message);
     console.error(err);
   }
 
-  btn.disabled = false;
-  btn.textContent = 'Analisar com IA';
+  if (btn) { btn.disabled = false; btn.textContent = 'Analisar com IA'; }
 }
 
 function renderExtratoPreview() {
@@ -1252,7 +1257,8 @@ function renderExtratoPreview() {
     return `
       <div class="extrato-item">
         <div class="extrato-row1">
-          <span class="extrato-desc">${esc(t.descricao)}</span>
+          <input class="extrato-desc-input" type="text" value="${esc(t.descricao)}"
+            onchange="_extratoTxs[${i}].descricao = this.value">
           <span class="extrato-valor ${valClass}">${valSign} ${fmt(t.valor)}</span>
         </div>
         <div class="extrato-row2">
@@ -1298,15 +1304,10 @@ async function importarExtrato() {
   toast(`✅ ${rows.length} transações importadas!`);
   _extratoTxs = [];
   _pdfText = '';
-  // Reset upload
-  const label = el('def-upload-label');
-  const text  = el('def-upload-text');
-  if (text) text.textContent = 'Clique para selecionar o PDF';
-  if (label) label.classList.remove('has-file');
-  const inp = el('def-pdf-input');
-  if (inp) inp.value = '';
-  const anBtn = el('def-analisar-btn');
-  if (anBtn) { anBtn.disabled = true; anBtn.textContent = 'Analisar com IA'; }
+  // Reset PDF state
+  _pdfText = '';
+  const pdfInp = el('mattia-pdf-input');
+  if (pdfInp) pdfInp.value = '';
 
   switchTab('dashboard', document.querySelector('[data-tab="dashboard"]'));
 }
@@ -1393,6 +1394,138 @@ function hideError(id)      { el(id).classList.add('hidden'); }
 function togglePwd(id) {
   const inp = el(id);
   inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// --- MattIA -------------------------------------------------
+
+let _mattiaOpen = false;
+
+function mattiaToggle() {
+  _mattiaOpen = !_mattiaOpen;
+  el('mattia-panel').classList.toggle('open', _mattiaOpen);
+  el('mattia-overlay').classList.toggle('open', _mattiaOpen);
+  if (_mattiaOpen) setTimeout(() => el('mattia-input').focus(), 300);
+}
+
+function mattiaUploadClick() {
+  el('mattia-pdf-input').click();
+}
+
+function _mattiaAddMsg(text, role) {
+  const box = el('mattia-messages');
+  const div = document.createElement('div');
+  div.className = `mattia-msg mattia-msg--${role}`;
+  div.innerHTML = text.replace(/\n/g, '<br>');
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+function _mattiaLoading() {
+  const box = el('mattia-messages');
+  const div = document.createElement('div');
+  div.className = 'mattia-msg mattia-msg--loading';
+  div.innerHTML = '<div class="mattia-dots"><span></span><span></span><span></span></div>';
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function mattiaEnviar() {
+  const input = el('mattia-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  _mattiaAddMsg(text, 'user');
+  el('mattia-quick').style.display = 'none';
+  await _mattiaChat(text);
+}
+
+async function mattiaAcao(tipo) {
+  el('mattia-quick').style.display = 'none';
+  let prompt = '';
+  if (tipo === 'resumo') {
+    prompt = 'Me dê um resumo financeiro do meu mês atual com base nas minhas transações.';
+  } else if (tipo === 'maiores') {
+    prompt = 'Quais foram meus maiores gastos este mês? Liste os 5 maiores com valor e categoria.';
+  }
+  _mattiaAddMsg(prompt, 'user');
+  await _mattiaChat(prompt);
+}
+
+async function _mattiaChat(userMsg) {
+  const key = _getGroqKey();
+  if (!key) { _mattiaAddMsg('Chave de IA não configurada. Contacte o suporte.', 'ai'); return; }
+
+  // Montar contexto financeiro
+  const txs = await _fetchTransactions(S.mes, S.ano);
+  const totalEntradas = (txs || []).filter(t => t.tipo === 'entrada').reduce((a, t) => a + (t.valor_brl || 0), 0);
+  const totalSaidas   = (txs || []).filter(t => t.tipo === 'saida').reduce((a, t) => a + (t.valor_brl || 0), 0);
+  const saldo = totalEntradas - totalSaidas;
+
+  const txResumo = (txs || []).slice(0, 30).map(t =>
+    `${t.data} | ${t.tipo} | R$${(t.valor_brl||0).toFixed(2)} | ${t.categoria} | ${t.descricao}`
+  ).join('\n');
+
+  const systemMsg = `Você é o MattIA, assistente financeiro pessoal do usuário. Seja direto, amigável e use emojis com moderação.
+
+Dados financeiros do mês atual (${S.mes}/${S.ano}):
+- Entradas: R$${totalEntradas.toFixed(2)}
+- Saídas: R$${totalSaidas.toFixed(2)}
+- Saldo: R$${saldo.toFixed(2)}
+
+Últimas transações:
+${txResumo || 'Nenhuma transação este mês.'}
+
+Responda em português brasileiro. Seja conciso (máximo 3 parágrafos).`;
+
+  const loading = _mattiaLoading();
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemMsg },
+          { role: 'user', content: userMsg }
+        ],
+        temperature: 0.5
+      })
+    });
+    const data = await resp.json();
+    loading.remove();
+    if (!resp.ok) throw new Error(data?.error?.message || 'Erro na IA');
+    const reply = data.choices?.[0]?.message?.content || 'Não consegui responder.';
+    _mattiaAddMsg(reply, 'ai');
+  } catch (err) {
+    loading.remove();
+    _mattiaAddMsg('Erro ao conectar com a IA: ' + err.message, 'ai');
+  }
+}
+
+async function mattiaHandlePdf(input) {
+  const file = input.files[0];
+  if (!file) return;
+  _mattiaAddMsg(`📄 Lendo **${file.name}**…`, 'ai');
+  el('mattia-quick').style.display = 'none';
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      fullText += content.items.map(s => s.str).join(' ') + '\n';
+    }
+    _pdfText = fullText;
+    _mattiaAddMsg(`✅ PDF lido (${pdf.numPages} páginas). Analisando transações com IA…`, 'ai');
+    await defAnalisarExtrato(true);
+  } catch (err) {
+    _mattiaAddMsg('❌ Erro ao ler o PDF. Tente outro arquivo.', 'ai');
+  }
 }
 
 let _toastTimer;

@@ -1104,11 +1104,127 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 }
 .extrato-row1 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .extrato-desc { font-size: 0.875rem; font-weight: 600; flex: 1; }
+.extrato-desc-input {
+  font-size: 0.875rem; font-weight: 600; flex: 1;
+  background: transparent; border: none; border-bottom: 1px solid var(--border);
+  color: var(--text); padding: 2px 4px; min-width: 0; outline: none;
+  transition: border-color 0.15s;
+}
+.extrato-desc-input:focus { border-bottom-color: var(--primary); }
 .extrato-valor { font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .extrato-valor.entrada { color: #4ADE80; }
 .extrato-valor.saida   { color: var(--red-dim); }
 .extrato-row2 { display: flex; gap: 6px; flex-wrap: wrap; }
 .extrato-data { font-size: 0.75rem; color: var(--muted); }
+
+/* ============================================================
+   MATTIA
+   ============================================================ */
+
+/* Floating button */
+.mattia-fab {
+  position: fixed; bottom: 88px; right: 20px; z-index: 900;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 28px; padding: 12px 18px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.mattia-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(34,197,94,0.5); }
+.mattia-fab-label { letter-spacing: 0.02em; }
+
+/* Overlay */
+.mattia-overlay {
+  display: none; position: fixed; inset: 0; z-index: 910;
+  background: rgba(0,0,0,0.45);
+}
+.mattia-overlay.open { display: block; }
+
+/* Panel */
+.mattia-panel {
+  position: fixed; bottom: 0; right: 0; z-index: 920;
+  width: min(440px, 100vw);
+  height: min(620px, 85vh);
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(.32,.72,0,1);
+}
+@media (min-width: 768px) {
+  .mattia-panel {
+    bottom: 20px; right: 24px; border-radius: 20px;
+    height: min(580px, 80vh);
+  }
+}
+.mattia-panel.open { transform: translateY(0); }
+
+/* Header */
+.mattia-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mattia-header-info { display: flex; align-items: center; gap: 12px; }
+.mattia-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #15803D);
+  color: #fff; font-weight: 800; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.mattia-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+.mattia-subtitle { font-size: 0.75rem; color: var(--muted); }
+.mattia-close {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1.1rem; padding: 4px 8px; border-radius: 8px;
+}
+.mattia-close:hover { background: var(--faint); }
+
+/* Messages */
+.mattia-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.mattia-msg { max-width: 85%; border-radius: 16px; padding: 10px 14px; font-size: 0.875rem; line-height: 1.5; }
+.mattia-msg p { margin: 0 0 6px; }
+.mattia-msg p:last-child { margin-bottom: 0; }
+.mattia-msg--ai { background: var(--inset); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+.mattia-msg--user { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.mattia-msg--loading { background: var(--inset); align-self: flex-start; border-bottom-left-radius: 4px; }
+.mattia-dots { display: flex; gap: 4px; padding: 4px 0; }
+.mattia-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: mDot 1.2s infinite; }
+.mattia-dots span:nth-child(2) { animation-delay: 0.2s; }
+.mattia-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes mDot { 0%,60%,100%{opacity:.3;transform:scale(.8)} 30%{opacity:1;transform:scale(1)} }
+
+/* Quick actions */
+.mattia-quick-actions {
+  display: flex; gap: 8px; padding: 0 16px 12px; flex-wrap: wrap; flex-shrink: 0;
+}
+.mattia-quick-btn {
+  background: var(--inset); border: 1px solid var(--border); border-radius: 20px;
+  color: var(--text); font-size: 0.8rem; padding: 6px 12px; cursor: pointer;
+  transition: background 0.15s;
+}
+.mattia-quick-btn:hover { background: var(--faint); }
+
+/* Input row */
+.mattia-input-row {
+  display: flex; gap: 8px; padding: 12px 16px;
+  border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.mattia-input {
+  flex: 1; background: var(--inset); border: 1px solid var(--border);
+  border-radius: 24px; padding: 10px 16px; color: var(--text);
+  font-size: 0.875rem; outline: none; transition: border-color 0.15s;
+}
+.mattia-input:focus { border-color: var(--primary); }
+.mattia-send-btn {
+  width: 42px; height: 42px; border-radius: 50%; background: var(--primary);
+  border: none; color: #fff; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; transition: background 0.15s;
+}
+.mattia-send-btn:hover { background: #16a34a; }
 
 /* ============================================================
    TOAST

@@ -449,19 +449,6 @@
         </div>
         <div id="def-list-entrada" class="def-cat-list"></div>
 
-        <!-- Importar extrato -->
-        <div class="section-header" style="margin-top:1.5rem;margin-bottom:0.5rem">
-          <span class="section-title">Importar extrato bancário</span>
-        </div>
-        <div class="def-card">
-          <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.75rem">Faça upload do PDF do seu extrato. O Gemini vai identificar todas as transações e sugerir categorias automaticamente.</p>
-          <label class="def-upload-label" id="def-upload-label">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span id="def-upload-text">Clique para selecionar o PDF</span>
-            <input type="file" id="def-pdf-input" accept=".pdf" style="display:none" onchange="defHandlePdf(this)">
-          </label>
-          <button class="btn-primary def-add-btn" id="def-analisar-btn" onclick="defAnalisarExtrato()" disabled>Analisar com IA</button>
-        </div>
 
       </div>
     </section>
@@ -483,6 +470,50 @@
     </section>
 
   </main>
+
+  <!-- ── MATTIA FLOATING BUTTON ───────────────────────────── -->
+  <button class="mattia-fab" id="mattia-fab" onclick="mattiaToggle()" title="MattIA">
+    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>
+    <span class="mattia-fab-label">MattIA</span>
+  </button>
+
+  <!-- ── MATTIA PANEL ─────────────────────────────────────── -->
+  <div class="mattia-overlay" id="mattia-overlay" onclick="mattiaToggle()"></div>
+  <div class="mattia-panel" id="mattia-panel">
+    <div class="mattia-header">
+      <div class="mattia-header-info">
+        <div class="mattia-avatar">M</div>
+        <div>
+          <div class="mattia-title">MattIA</div>
+          <div class="mattia-subtitle">Assistente financeiro com IA</div>
+        </div>
+      </div>
+      <button class="mattia-close" onclick="mattiaToggle()">✕</button>
+    </div>
+
+    <div class="mattia-messages" id="mattia-messages">
+      <div class="mattia-msg mattia-msg--ai">
+        <p>Olá! Sou o MattIA 👋</p>
+        <p>Posso te ajudar a analisar seus gastos, responder perguntas sobre suas finanças ou importar um extrato bancário em PDF.</p>
+      </div>
+    </div>
+
+    <!-- Ações rápidas -->
+    <div class="mattia-quick-actions" id="mattia-quick">
+      <button class="mattia-quick-btn" onclick="mattiaAcao('resumo')">📊 Resumo do mês</button>
+      <button class="mattia-quick-btn" onclick="mattiaAcao('maiores')">💸 Maiores gastos</button>
+      <button class="mattia-quick-btn" onclick="mattiaUploadClick()">📄 Importar extrato PDF</button>
+    </div>
+
+    <!-- Input -->
+    <div class="mattia-input-row">
+      <input type="file" id="mattia-pdf-input" accept=".pdf" style="display:none" onchange="mattiaHandlePdf(this)">
+      <input class="mattia-input" id="mattia-input" type="text" placeholder="Pergunte algo sobre suas finanças…" onkeydown="if(event.key==='Enter')mattiaEnviar()">
+      <button class="mattia-send-btn" onclick="mattiaEnviar()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
 
   <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
