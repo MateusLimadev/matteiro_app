@@ -1457,25 +1457,39 @@ async function _mattiaChat(userMsg) {
   const key = _getGroqKey();
   if (!key) { _mattiaAddMsg('Chave de IA não configurada. Contacte o suporte.', 'ai'); return; }
 
-  // Montar contexto financeiro
-  const txs = await _fetchTransactions(S.mes, S.ano);
-  const totalEntradas = (txs || []).filter(t => t.tipo === 'entrada').reduce((a, t) => a + (t.valor_brl || 0), 0);
-  const totalSaidas   = (txs || []).filter(t => t.tipo === 'saida').reduce((a, t) => a + (t.valor_brl || 0), 0);
+  // Montar contexto financeiro (fetch silencioso, sem toast)
+  const pad = n => String(n).padStart(2, '0');
+  const from = `${S.ano}-${pad(S.mes)}-01`;
+  const lastDay = new Date(S.ano, S.mes, 0).getDate();
+  const to = `${S.ano}-${pad(S.mes)}-${pad(lastDay)}`;
+
+  const { data: txs } = await sb.from('transacoes')
+    .select('data, tipo, valor_brl, categoria, descricao')
+    .gte('data', from)
+    .lte('data', to)
+    .order('data', { ascending: false })
+    .limit(50);
+
+  const lista = txs || [];
+  const totalEntradas = lista.filter(t => t.tipo === 'entrada').reduce((a, t) => a + (t.valor_brl || 0), 0);
+  const totalSaidas   = lista.filter(t => t.tipo === 'saida').reduce((a, t) => a + (t.valor_brl || 0), 0);
   const saldo = totalEntradas - totalSaidas;
 
-  const txResumo = (txs || []).slice(0, 30).map(t =>
+  const txResumo = lista.slice(0, 40).map(t =>
     `${t.data} | ${t.tipo} | R$${(t.valor_brl||0).toFixed(2)} | ${t.categoria} | ${t.descricao}`
   ).join('\n');
 
+  const mesNome = new Date(S.ano, S.mes - 1).toLocaleString('pt-BR', { month: 'long' });
+
   const systemMsg = `Você é o MattIA, assistente financeiro pessoal do usuário. Seja direto, amigável e use emojis com moderação.
 
-Dados financeiros do mês atual (${S.mes}/${S.ano}):
-- Entradas: R$${totalEntradas.toFixed(2)}
-- Saídas: R$${totalSaidas.toFixed(2)}
+Dados financeiros de ${mesNome} de ${S.ano}:
+- Receitas: R$${totalEntradas.toFixed(2)}
+- Despesas: R$${totalSaidas.toFixed(2)}
 - Saldo: R$${saldo.toFixed(2)}
 
-Últimas transações:
-${txResumo || 'Nenhuma transação este mês.'}
+Transações do mês:
+${txResumo || 'Nenhuma transação registrada.'}
 
 Responda em português brasileiro. Seja conciso (máximo 3 parágrafos).`;
 
