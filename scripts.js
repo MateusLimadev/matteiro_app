@@ -1424,9 +1424,44 @@ async function renderPlanejamento() {
   }
   empty.classList.add('hidden');
 
-  // Usa _allTxs (dados já carregados do dashboard — mesmo mês, mesma conta)
   const hoje = new Date();
+  const pad2 = n => String(n).padStart(2,'0');
+
   const cards = await Promise.all(_plans.map(async p => {
+    // Busca dados mensais do período do plano para o gráfico
+    const dataIniPlan = new Date(p.data_inicio);
+    const dataFimPlan = new Date(p.data_fim);
+    const iniMesPlan  = `${dataIniPlan.getFullYear()}-${pad2(dataIniPlan.getMonth()+1)}-01`;
+    const fimMesPlan  = `${dataFimPlan.getFullYear()}-${pad2(dataFimPlan.getMonth()+1)}-${pad2(new Date(dataFimPlan.getFullYear(), dataFimPlan.getMonth()+1, 0).getDate())}`;
+
+    const { data: txsPlan } = await sb.from('transacoes')
+      .select('data, tipo, valor_brl')
+      .gte('data', iniMesPlan)
+      .lte('data', fimMesPlan);
+
+    // Agrupa por mês
+    const porMesPlan = {};
+    (txsPlan || []).forEach(t => {
+      const k = t.data.slice(0, 7);
+      if (!porMesPlan[k]) porMesPlan[k] = { e: 0, s: 0 };
+      if (t.tipo === 'entrada') porMesPlan[k].e += parseFloat(t.valor_brl) || 0;
+      else porMesPlan[k].s += parseFloat(t.valor_brl) || 0;
+    });
+
+    // Gera lista de meses do período
+    const mesesLabels = [], mesesSaldos = [];
+    let cur = new Date(dataIniPlan.getFullYear(), dataIniPlan.getMonth(), 1);
+    while (cur <= dataFimPlan) {
+      const k = `${cur.getFullYear()}-${pad2(cur.getMonth()+1)}`;
+      const nome = cur.toLocaleString('pt-BR', { month: 'short' });
+      const v = porMesPlan[k] || { e: 0, s: 0 };
+      mesesLabels.push(nome);
+      mesesSaldos.push(+(v.e - v.s).toFixed(2));
+      cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+    }
+    const chartId = `plan-chart-${p.id.slice(0,8)}`;
+
+    // Totais do mês atual (dashboard)
     const lista = _allTxs || [];
     const entradas = lista.filter(t => t.tipo === 'entrada').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
     const saidas   = lista.filter(t => t.tipo === 'saida').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
@@ -1453,7 +1488,9 @@ async function renderPlanejamento() {
       alertHtml = `<div class="plan-alert warn">⚡ Você está na metade do prazo mas com só ${progresso.toFixed(0)}% concluído.</div>`;
     }
 
-    return `
+    // Guarda dados para renderizar após inserir no DOM
+    return { chartId, mesesLabels, mesesSaldos, metaMensal,
+      _html: `
       <div class="plan-card">
         <div class="plan-card-header">
           <div>
@@ -1483,10 +1520,81 @@ async function renderPlanejamento() {
           </div>
         </div>
         ${alertHtml}
-      </div>`;
+        <div class="plan-chart-wrap">
+          <div class="plan-chart-title">Saldo guardado por mês</div>
+          <canvas id="${chartId}" height="90"></canvas>
+        </div>
+      </div>`
+    };
   }));
 
-  list.innerHTML = cards.join('');
+  list.innerHTML = cards.map(c => c._html).join('');
+
+  // Renderiza os gráficos após o DOM ser atualizado
+  cards.forEach(({ chartId, mesesLabels, mesesSaldos, metaMensal }) => {
+    const canvas = document.getElementById(chartId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const positivo = 'rgba(74,222,128,0.85)';
+    const negativo  = 'rgba(239,68,68,0.75)';
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: mesesLabels,
+        datasets: [
+          {
+            label: 'Saldo do mês',
+            data: mesesSaldos,
+            backgroundColor: mesesSaldos.map(v => v >= 0 ? positivo : negativo),
+            borderRadius: 4,
+            borderSkipped: false,
+          },
+          {
+            label: 'Meta/mês',
+            data: mesesLabels.map(() => metaMensal),
+            type: 'line',
+            borderColor: 'rgba(255,255,255,0.25)',
+            borderWidth: 1.5,
+            borderDash: [4, 3],
+            segment: { borderDash: ctx => [4,3] },
+            pointRadius: 0,
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed.y;
+                return ` ${fmt(v)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#9ca3af', font: { size: 11 } },
+            grid: { display: false },
+            border: { display: false }
+          },
+          y: {
+            ticks: {
+              color: '#9ca3af',
+              font: { size: 11 },
+              callback: v => `R$${(v/1000).toFixed(0)}k`
+            },
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            border: { display: false }
+          }
+        }
+      }
+    });
+  });
 }
 
 function planNovo() {

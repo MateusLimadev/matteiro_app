@@ -1324,6 +1324,24 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 }
 .plan-alert.warn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
 
+/* Gráfico mensal do plano */
+.plan-chart-wrap {
+  margin-top: 1.25rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 1rem;
+}
+.plan-chart-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.plan-chart-wrap canvas {
+  width: 100% !important;
+  max-height: 110px;
+}
+
 /* Matt tip in modal */
 .plan-matt-tip {
   background: var(--inset); border-left: 3px solid var(--primary);
