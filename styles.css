@@ -1358,7 +1358,28 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
   padding: 1.25rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border);
 }
 .modal-title { font-weight: 700; font-size: 1rem; color: var(--text); }
-.modal-body { padding: 1.25rem; }
+.modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.modal-body .field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  margin-top: 1rem;
+}
+.modal-body .field-label:first-child { margin-top: 0; }
+.modal-body .field-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
 .modal-footer {
   display: flex; gap: 8px; padding: 1rem 1.25rem;
   border-top: 1px solid var(--border);

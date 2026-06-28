@@ -445,13 +445,18 @@
         <label class="field-label">Objetivo</label>
         <input id="plan-titulo" class="field-input" type="text" placeholder="Ex: Reserva de emergência, Viagem, Carro…" maxlength="60">
 
-        <label class="field-label" style="margin-top:1rem">Quanto você quer guardar? (R$)</label>
-        <input id="plan-valor" class="field-input" type="number" min="1" placeholder="5000">
+        <div style="display:flex;gap:12px;margin-top:1rem">
+          <div style="flex:1">
+            <label class="field-label" style="margin-top:0">Meta (R$)</label>
+            <input id="plan-valor" class="field-input" type="number" min="1" placeholder="5000" style="width:100%;box-sizing:border-box">
+          </div>
+          <div style="flex:1">
+            <label class="field-label" style="margin-top:0">Data limite</label>
+            <input id="plan-data" class="field-input" type="date" style="width:100%;box-sizing:border-box">
+          </div>
+        </div>
 
-        <label class="field-label" style="margin-top:1rem">Data limite</label>
-        <input id="plan-data" class="field-input" type="date">
-
-        <label class="field-label" style="margin-top:1rem">Renda mensal estimada (R$)</label>
+        <label class="field-label">Renda mensal (R$)</label>
         <input id="plan-renda" class="field-input" type="number" min="1" placeholder="3000">
 
         <div id="plan-matt-tip" class="plan-matt-tip hidden"></div>
