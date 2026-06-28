@@ -401,7 +401,7 @@ body {
 /* ── Main content ───────────────────────────────────────────── */
 .main-content {
   flex: 1;
-  padding-bottom: calc(var(--nav-h) + 0.5rem);
+  padding-bottom: calc(var(--nav-h) + 5rem);
   max-width: 520px; margin: 0 auto; width: 100%;
   min-height: 100dvh;
 }
