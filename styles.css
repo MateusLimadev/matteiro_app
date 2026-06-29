@@ -232,6 +232,19 @@ body {
 .btn-primary:active  { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+.btn-secondary {
+  padding: 0.8rem 1.2rem;
+  background: var(--faint);
+  color: var(--muted); border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 0.9rem; font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn-secondary:hover { background: var(--inset); color: var(--text); }
+
 .icon-btn {
   background: none; border: none; color: var(--muted);
   cursor: pointer; padding: 0.4rem;
@@ -1442,7 +1455,8 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
   display: flex; gap: 8px; padding: 1rem 1.25rem;
   border-top: 1px solid var(--border);
 }
-.modal-footer .btn-primary { flex: 1; }
+.modal-footer .btn-primary  { flex: 1; margin-top: 0; width: auto; }
+.modal-footer .btn-secondary { flex-shrink: 0; }
 
 /* ============================================================
    EMPTY STATE
