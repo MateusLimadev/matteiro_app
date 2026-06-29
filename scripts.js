@@ -1784,21 +1784,105 @@ async function mattiaAcao(tipo) {
   await _mattiaChat(prompt);
 }
 
+async function _mattiaExecutarAcao(acao) {
+  // acao: { tipo, params }
+  if (acao.tipo === 'abrir_planejamento') {
+    _mattiaAddMsg('Abrindo o planejamento agora! 🎯', 'ai');
+    setTimeout(() => { mattiaToggle(); switchTab('planejamento', document.querySelector('[data-tab="planejamento"]')); setTimeout(planNovo, 350); }, 500);
+    return true;
+  }
+
+  if (acao.tipo === 'criar_categoria') {
+    const { nome, tipo, cor } = acao.params || {};
+    if (!nome) { _mattiaAddMsg('Não entendi o nome da categoria. Pode repetir?', 'ai'); return true; }
+    const tipoFinal = tipo === 'entrada' ? 'entrada' : 'saida';
+    const corFinal  = cor || '#22C55E';
+    if (S.cats.find(c => c.nome === nome && c.tipo === tipoFinal)) {
+      _mattiaAddMsg(`A categoria **${nome}** já existe! 😄`, 'ai'); return true;
+    }
+    const { data, error } = await sb.from('categorias').insert({ nome, tipo: tipoFinal, cor: corFinal, user_id: S.user.id }).select().single();
+    if (error) { _mattiaAddMsg('Erro ao criar a categoria. Tenta de novo?', 'ai'); return true; }
+    S.cats.push(data);
+    renderDefLists?.();
+    _mattiaAddMsg(`Categoria **${nome}** (${tipoFinal === 'entrada' ? 'receita' : 'gasto'}) criada! ✅`, 'ai');
+    return true;
+  }
+
+  if (acao.tipo === 'fazer_aporte') {
+    const { plano, valor, data } = acao.params || {};
+    if (!valor || valor <= 0) { _mattiaAddMsg('Preciso saber o valor do aporte. Quanto você quer guardar?', 'ai'); return true; }
+    // Tenta achar o plano pelo nome
+    let planObj = null;
+    if (plano) {
+      const low = plano.toLowerCase();
+      planObj = _plans.find(p => p.titulo.toLowerCase().includes(low));
+    }
+    if (!planObj && _plans.length === 1) planObj = _plans[0];
+    if (!planObj) {
+      const nomes = _plans.map(p => p.titulo).join(', ');
+      _mattiaAddMsg(`Qual plano? Você tem: ${nomes}`, 'ai'); return true;
+    }
+    const dataFinal = data || new Date().toISOString().slice(0,10);
+    const { error } = await sb.from('planejamento_aportes').insert({ user_id: S.user.id, planejamento_id: planObj.id, valor, data: dataFinal });
+    if (error) { _mattiaAddMsg('Erro ao registrar o aporte. Tenta de novo?', 'ai'); return true; }
+    _mattiaAddMsg(`Aporte de **R$${Number(valor).toFixed(2)}** registrado no plano **${planObj.titulo}**! 💰`, 'ai');
+    if (document.getElementById('plan-list')) renderPlanejamento();
+    return true;
+  }
+
+  return false;
+}
+
 async function _mattiaChat(userMsg) {
   const key = _getGroqKey();
   if (!key) { _mattiaAddMsg('Chave de IA não configurada. Contacte o suporte.', 'ai'); return; }
 
-  // Detectar intenção de criar plano — age diretamente
   const msgLow = userMsg.toLowerCase();
-  const planIntent = ['crie o plano','criar plano','cria o plano','cria um plano','criar um plano',
-    'novo plano','abrir planejamento','aba planejamento','planejamento e crie','cria na aba'];
-  if (planIntent.some(k => msgLow.includes(k))) {
-    _mattiaAddMsg('Abrindo o planejamento agora! 🎯', 'ai');
-    setTimeout(() => {
-      mattiaToggle();
-      switchTab('planejamento', document.querySelector('[data-tab="planejamento"]'));
-      setTimeout(planNovo, 350);
-    }, 500);
+
+  // ── Detectar intenção de ação via IA ──────────────────────
+  const planosInfo = _plans.map(p => p.titulo).join(', ') || 'nenhum';
+  const catsInfo   = (S.cats || []).map(c => c.nome).join(', ') || 'nenhuma';
+
+  const intentPrompt = `Você é um parser de intenções. Analise a mensagem do usuário e retorne JSON com a ação a executar.
+
+Ações disponíveis:
+- "conversa": apenas conversar/perguntar (sem ação no app)
+- "abrir_planejamento": abrir aba de planejamento e criar novo plano
+- "criar_categoria": criar uma categoria. Params: nome (string), tipo ("entrada" ou "saida"), cor (hex opcional)
+- "fazer_aporte": registrar aporte em um plano. Params: plano (nome parcial), valor (número), data (YYYY-MM-DD opcional)
+
+Planos existentes: ${planosInfo}
+Categorias existentes: ${catsInfo}
+
+Retorne APENAS JSON neste formato:
+{"acao": "conversa"}
+ou {"acao": "criar_categoria", "params": {"nome": "...", "tipo": "saida", "cor": "#22C55E"}}
+ou {"acao": "fazer_aporte", "params": {"plano": "...", "valor": 500, "data": "2026-06-29"}}
+ou {"acao": "abrir_planejamento"}
+
+Mensagem: "${userMsg.replace(/"/g, "'")}"`;
+
+  let acaoDetectada = null;
+  try {
+    const ir = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: intentPrompt }],
+        response_format: { type: 'json_object' },
+        temperature: 0
+      })
+    });
+    const id = await ir.json();
+    const parsed = JSON.parse(id.choices?.[0]?.message?.content || '{}');
+    if (parsed.acao && parsed.acao !== 'conversa') acaoDetectada = { tipo: parsed.acao, params: parsed.params };
+  } catch(e) { /* se falhar, segue para chat normal */ }
+
+  if (acaoDetectada) {
+    const loading = _mattiaLoading();
+    loading.remove();
+    await _mattiaExecutarAcao(acaoDetectada);
     return;
   }
 
