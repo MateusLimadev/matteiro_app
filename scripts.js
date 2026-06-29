@@ -1808,6 +1808,43 @@ async function _mattiaExecutarAcao(acao) {
     return true;
   }
 
+  if (acao.tipo === 'remover_aporte') {
+    const { plano, valor } = acao.params || {};
+    let planObj = null;
+    if (plano) {
+      const low = plano.toLowerCase();
+      planObj = _plans.find(p => p.titulo.toLowerCase().includes(low));
+    }
+    if (!planObj && _plans.length === 1) planObj = _plans[0];
+    if (!planObj) {
+      const nomes = _plans.map(p => p.titulo).join(', ');
+      _mattiaAddMsg(`Qual plano? Você tem: ${nomes}`, 'ai'); return true;
+    }
+
+    if (!valor) { _mattiaAddMsg('Qual o valor do aporte que quer remover?', 'ai'); return true; }
+
+    // Busca aporte mais recente com esse valor, desse usuário, nesse plano
+    const { data: encontrados, error: errFind } = await sb.from('planejamento_aportes')
+      .select('id, valor, data')
+      .eq('user_id', S.user.id)
+      .eq('planejamento_id', planObj.id)
+      .eq('valor', valor)
+      .order('criado_em', { ascending: false })
+      .limit(1);
+
+    if (errFind || !encontrados?.length) {
+      _mattiaAddMsg(`Não achei aporte de **${fmt(valor)}** no plano **${planObj.titulo}**.`, 'ai'); return true;
+    }
+
+    const ap = encontrados[0];
+    const { error } = await sb.from('planejamento_aportes').delete().eq('id', ap.id).eq('user_id', S.user.id);
+    if (error) { _mattiaAddMsg('Erro ao remover o aporte.', 'ai'); return true; }
+
+    _mattiaAddMsg(`Aporte de **${fmt(ap.valor)}** removido do plano **${planObj.titulo}**. ✅`, 'ai');
+    if (document.getElementById('plan-list')) renderPlanejamento();
+    return true;
+  }
+
   if (acao.tipo === 'fazer_aporte') {
     const { plano, valor, data } = acao.params || {};
     if (!valor || valor <= 0) { _mattiaAddMsg('Preciso saber o valor do aporte. Quanto você quer guardar?', 'ai'); return true; }
@@ -1850,6 +1887,7 @@ Ações disponíveis:
 - "abrir_planejamento": abrir aba de planejamento e criar novo plano
 - "criar_categoria": criar uma categoria. Params: nome (string), tipo ("entrada" ou "saida"), cor (hex opcional)
 - "fazer_aporte": registrar aporte em um plano. Params: plano (nome parcial), valor (número), data (YYYY-MM-DD opcional)
+- "remover_aporte": remover/cancelar/desfazer um aporte já feito. Params: plano (nome parcial), valor (número opcional)
 
 Planos existentes: ${planosInfo}
 Categorias existentes: ${catsInfo}
@@ -1858,6 +1896,7 @@ Retorne APENAS JSON neste formato:
 {"acao": "conversa"}
 ou {"acao": "criar_categoria", "params": {"nome": "...", "tipo": "saida", "cor": "#22C55E"}}
 ou {"acao": "fazer_aporte", "params": {"plano": "...", "valor": 500, "data": "2026-06-29"}}
+ou {"acao": "remover_aporte", "params": {"plano": "...", "valor": 500}}
 ou {"acao": "abrir_planejamento"}
 
 Mensagem: "${userMsg.replace(/"/g, "'")}"`;
