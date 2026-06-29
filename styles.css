@@ -8,6 +8,13 @@
 /* ── Reset ─────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Remove outline roxo/azul do browser em todos os elementos */
+*:focus { outline: none; }
+*:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Força accent-color verde em checkboxes, range, etc */
+:root { accent-color: #22C55E; }
+
 /* ── Design tokens (dark — default) ────────────────────────── */
 :root {
   /* Brand */
@@ -228,7 +235,7 @@ body {
   box-shadow: 0 2px 8px var(--primary-glow);
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
 }
-.btn-primary:hover   { background: #4338CA; box-shadow: 0 4px 14px var(--primary-glow); }
+.btn-primary:hover   { background: #16a34a; box-shadow: 0 4px 14px var(--primary-glow); }
 .btn-primary:active  { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
