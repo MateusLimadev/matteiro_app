@@ -1934,10 +1934,11 @@ ${_plans.length ? `Planos ativos:\n${_plans.map(p => {
 }).join('\n')}` : ''}
 
 Regras de resposta:
-- Máximo 2 parágrafos ou lista de 5 itens
-- Português BR informal, sem enrolação
-- Emoji só quando fizer sentido
-- SEMPRE formatar valores monetários no padrão brasileiro: R$1.805,70 — vírgula para decimais, ponto para milhar. NUNCA usar ponto decimal americano (ex: ERRADO: R$1805.70, CERTO: R$1.805,70)
+- SEJA CURTO. Máximo 3 frases. Sem introdução, sem enrolação, vai direto ao ponto.
+- Se for lista, máximo 4 itens, cada um em 1 linha
+- Português BR informal, como um amigo mandando mensagem
+- Emoji só 1 por resposta, no final, se fizer sentido
+- SEMPRE formatar valores no padrão BR: R$1.805,70 — vírgula decimal, ponto milhar. NUNCA formato americano.
 
 ${_plans.length ? `Planos ativos:
 ${_plans.map(p => {
