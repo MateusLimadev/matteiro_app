@@ -1413,8 +1413,8 @@ async function loadPlanejamento() {
 }
 
 async function renderPlanejamento() {
-  const list    = el('plan-list');
-  const empty   = el('plan-empty');
+  const list  = el('plan-list');
+  const empty = el('plan-empty');
   if (!list) return;
 
   if (!_plans.length) {
@@ -1428,67 +1428,48 @@ async function renderPlanejamento() {
   const pad2 = n => String(n).padStart(2,'0');
 
   const cards = await Promise.all(_plans.map(async p => {
-    // Busca dados mensais do período do plano para o gráfico
-    const dataIniPlan = new Date(p.data_inicio);
-    const dataFimPlan = new Date(p.data_fim);
-    const iniMesPlan  = `${dataIniPlan.getFullYear()}-${pad2(dataIniPlan.getMonth()+1)}-01`;
-    const fimMesPlan  = `${dataFimPlan.getFullYear()}-${pad2(dataFimPlan.getMonth()+1)}-${pad2(new Date(dataFimPlan.getFullYear(), dataFimPlan.getMonth()+1, 0).getDate())}`;
+    // Busca aportes manuais deste plano
+    const { data: aportes } = await sb.from('planejamento_aportes')
+      .select('valor, data')
+      .eq('planejamento_id', p.id);
 
-    const { data: txsPlan } = await sb.from('transacoes')
-      .select('data, tipo, valor_brl')
-      .gte('data', iniMesPlan)
-      .lte('data', fimMesPlan);
+    const totalGuardado = (aportes || []).reduce((a, ap) => a + (parseFloat(ap.valor) || 0), 0);
 
-    // Agrupa por mês
-    const porMesPlan = {};
-    (txsPlan || []).forEach(t => {
-      const k = t.data.slice(0, 7);
-      if (!porMesPlan[k]) porMesPlan[k] = { e: 0, s: 0 };
-      if (t.tipo === 'entrada') porMesPlan[k].e += parseFloat(t.valor_brl) || 0;
-      else porMesPlan[k].s += parseFloat(t.valor_brl) || 0;
+    // Agrupa aportes por mês para o gráfico
+    const porMes = {};
+    (aportes || []).forEach(ap => {
+      const k = ap.data.slice(0, 7);
+      porMes[k] = (porMes[k] || 0) + (parseFloat(ap.valor) || 0);
     });
 
-    // Gera lista de meses do período
-    const mesesLabels = [], mesesSaldos = [];
-    let cur = new Date(dataIniPlan.getFullYear(), dataIniPlan.getMonth(), 1);
-    while (cur <= dataFimPlan) {
-      const k = `${cur.getFullYear()}-${pad2(cur.getMonth()+1)}`;
-      const nome = cur.toLocaleString('pt-BR', { month: 'short' });
-      const v = porMesPlan[k] || { e: 0, s: 0 };
-      mesesLabels.push(nome);
-      mesesSaldos.push(+(v.e - v.s).toFixed(2));
-      cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
-    }
-    const chartId = `plan-chart-${p.id.slice(0,8)}`;
-
-    // Totais do mês atual (dashboard)
-    const lista = _allTxs || [];
-    const entradas = lista.filter(t => t.tipo === 'entrada').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
-    const saidas   = lista.filter(t => t.tipo === 'saida').reduce((a,t)=>a+(parseFloat(t.valor_brl)||0),0);
-    const saldoReal = entradas - saidas;
-
-    const dataFim   = new Date(p.data_fim);
-    const dataIni   = new Date(p.data_inicio);
+    const dataFim  = new Date(p.data_fim);
+    const dataIni  = new Date(p.data_inicio);
     const mesesTotal = Math.max(1, Math.round((dataFim - dataIni) / (1000*60*60*24*30)));
     const mesesRest  = Math.max(0, Math.round((dataFim - hoje) / (1000*60*60*24*30)));
     const metaMensal = p.valor_meta / mesesTotal;
 
-    const progresso  = Math.min(100, Math.max(0, (saldoReal / p.valor_meta) * 100));
-    const barClass   = progresso >= 66 ? '' : progresso >= 33 ? 'warn' : 'danger';
+    // Gera labels e valores mensais para o gráfico
+    const mesesLabels = [], mesesSaldos = [];
+    let cur = new Date(dataIni.getFullYear(), dataIni.getMonth(), 1);
+    while (cur <= dataFim) {
+      const k = `${cur.getFullYear()}-${pad2(cur.getMonth()+1)}`;
+      mesesLabels.push(cur.toLocaleString('pt-BR', { month: 'short' }));
+      mesesSaldos.push(+(porMes[k] || 0).toFixed(2));
+      cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+    }
+    const chartId = `plan-chart-${p.id.slice(0,8)}`;
 
-    const prazoStr   = dataFim.toLocaleDateString('pt-BR', { month:'short', year:'numeric' });
+    const progresso = Math.min(100, Math.max(0, (totalGuardado / p.valor_meta) * 100));
+    const barClass  = progresso >= 66 ? '' : progresso >= 33 ? 'warn' : 'danger';
+    const prazoStr  = dataFim.toLocaleDateString('pt-BR', { month:'short', year:'numeric' });
 
-    // Alerta: se falta pouco tempo e progresso baixo
     let alertHtml = '';
     if (mesesRest <= 1 && progresso < 80) {
-      alertHtml = `<div class="plan-alert">⚠️ Menos de 1 mês restante e você está em ${progresso.toFixed(0)}%. Reduza gastos agora.</div>`;
-    } else if (saldoReal < 0) {
-      alertHtml = `<div class="plan-alert">🚨 Saldo negativo no período. Esse plano está em risco.</div>`;
+      alertHtml = `<div class="plan-alert">⚠️ Menos de 1 mês e você está em ${progresso.toFixed(0)}%. Aporte agora!</div>`;
     } else if (progresso < 30 && mesesRest < mesesTotal * 0.5) {
-      alertHtml = `<div class="plan-alert warn">⚡ Você está na metade do prazo mas com só ${progresso.toFixed(0)}% concluído.</div>`;
+      alertHtml = `<div class="plan-alert warn">⚡ Metade do prazo com só ${progresso.toFixed(0)}% concluído.</div>`;
     }
 
-    // Guarda dados para renderizar após inserir no DOM
     return { chartId, mesesLabels, mesesSaldos, metaMensal,
       _html: `
       <div class="plan-card">
@@ -1512,7 +1493,7 @@ async function renderPlanejamento() {
           </div>
           <div class="plan-stat">
             <div class="plan-stat-label">Guardado</div>
-            <div class="plan-stat-value" style="color:${saldoReal>=0?'var(--positive)':'var(--red-dim)'}">${fmt(Math.abs(saldoReal))}</div>
+            <div class="plan-stat-value" style="color:var(--positive)">${fmt(totalGuardado)}</div>
           </div>
           <div class="plan-stat">
             <div class="plan-stat-label">Meta/mês</div>
@@ -1520,8 +1501,11 @@ async function renderPlanejamento() {
           </div>
         </div>
         ${alertHtml}
+        <button class="plan-aportar-btn" onclick="planAportarAbrir('${p.id}', '${esc(p.titulo)}')">
+          + Registrar aporte
+        </button>
         <div class="plan-chart-wrap">
-          <div class="plan-chart-title">Saldo guardado por mês</div>
+          <div class="plan-chart-title">Aportes por mês</div>
           <canvas id="${chartId}" height="90"></canvas>
         </div>
       </div>`
@@ -1675,6 +1659,45 @@ async function planDeletar(id) {
   _plans = _plans.filter(p => p.id !== id);
   renderPlanejamento();
   toast('Plano removido.');
+}
+
+// ── APORTES ─────────────────────────────────────────────────
+let _aportePlanId = null;
+
+function planAportarAbrir(planId, titulo) {
+  _aportePlanId = planId;
+  el('aporte-titulo').textContent = titulo;
+  el('aporte-valor').value = '';
+  el('aporte-data').value = new Date().toISOString().slice(0,10);
+  el('aporte-modal').classList.remove('hidden');
+  el('aporte-modal-overlay').classList.remove('hidden');
+  setTimeout(() => el('aporte-valor').focus(), 100);
+}
+
+function planAportarFechar() {
+  el('aporte-modal').classList.add('hidden');
+  el('aporte-modal-overlay').classList.add('hidden');
+  _aportePlanId = null;
+}
+
+async function planAportarSalvar() {
+  const valor = parseFloat(el('aporte-valor').value.replace(',', '.'));
+  const data  = el('aporte-data').value;
+  if (!valor || valor <= 0) { toast('Informe um valor válido.', true); return; }
+  if (!data) { toast('Informe a data.', true); return; }
+
+  const { error } = await sb.from('planejamento_aportes').insert({
+    user_id: S.user.id,
+    planejamento_id: _aportePlanId,
+    valor,
+    data
+  });
+
+  if (error) { toast('Erro ao salvar aporte.', true); console.error(error); return; }
+
+  toast('Aporte registrado!');
+  planAportarFechar();
+  renderPlanejamento();
 }
 
 async function _checkPlanAlerts() {

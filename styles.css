@@ -1335,6 +1335,24 @@ input[type="date"].tx-edit-date { color-scheme: dark; }
 }
 .plan-alert.warn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
 
+/* Botão aportar */
+.plan-aportar-btn {
+  width: 100%; margin-top: 1rem;
+  background: rgba(34,197,94,0.1);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: var(--primary);
+  border-radius: 10px; padding: 10px;
+  font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+}
+.plan-aportar-btn:hover { background: rgba(34,197,94,0.18); }
+
+/* Modal aporte */
+.aporte-plan-nome {
+  font-weight: 600; color: var(--text);
+  margin-bottom: 1rem; font-size: 0.95rem;
+}
+
 /* Gráfico mensal do plano */
 .plan-chart-wrap {
   margin-top: 1.25rem;
