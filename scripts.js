@@ -1825,7 +1825,7 @@ async function _mattiaExecutarAcao(acao) {
     const dataFinal = data || new Date().toISOString().slice(0,10);
     const { error } = await sb.from('planejamento_aportes').insert({ user_id: S.user.id, planejamento_id: planObj.id, valor, data: dataFinal });
     if (error) { _mattiaAddMsg('Erro ao registrar o aporte. Tenta de novo?', 'ai'); return true; }
-    _mattiaAddMsg(`Aporte de **R$${Number(valor).toFixed(2)}** registrado no plano **${planObj.titulo}**! 💰`, 'ai');
+    _mattiaAddMsg(`Aporte de **${fmt(valor)}** registrado no plano **${planObj.titulo}**! 💰`, 'ai');
     if (document.getElementById('plan-list')) renderPlanejamento();
     return true;
   }
@@ -1937,6 +1937,7 @@ Regras de resposta:
 - Máximo 2 parágrafos ou lista de 5 itens
 - Português BR informal, sem enrolação
 - Emoji só quando fizer sentido
+- SEMPRE formatar valores monetários no padrão brasileiro: R$1.805,70 — vírgula para decimais, ponto para milhar. NUNCA usar ponto decimal americano (ex: ERRADO: R$1805.70, CERTO: R$1.805,70)
 
 ${_plans.length ? `Planos ativos:
 ${_plans.map(p => {
